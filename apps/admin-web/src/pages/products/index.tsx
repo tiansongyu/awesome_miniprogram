@@ -387,7 +387,7 @@ export default function Products() {
               status,
             });
             return {
-              data: result.list,
+              data: result.items,
               total: result.total,
               success: true,
             };

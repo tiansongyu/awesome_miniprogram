@@ -42,7 +42,7 @@ export interface ProductListParams {
 }
 
 export interface ProductListResult {
-  list: Product[];
+  items: Product[];
   total: number;
   page: number;
   pageSize: number;
