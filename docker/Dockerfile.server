@@ -1,0 +1,31 @@
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+WORKDIR /app
+
+FROM base AS deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/server/package.json ./apps/server/
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY packages/utils/package.json ./packages/utils/
+RUN pnpm install --frozen-lockfile
+
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/server/node_modules ./apps/server/node_modules
+COPY --from=deps /app/packages ./packages
+COPY . .
+RUN pnpm --filter server prisma generate
+RUN pnpm --filter server build
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nestjs
+
+COPY --from=builder /app/apps/server/dist ./dist
+COPY --from=builder /app/apps/server/node_modules ./node_modules
+COPY --from=builder /app/apps/server/prisma ./prisma
+COPY --from=builder /app/apps/server/package.json ./
+
+USER nestjs
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
