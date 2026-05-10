@@ -1,0 +1,166 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  SUPER_ADMIN
+  AGENT_L1
+  AGENT_L2
+  AGENT_L3
+  CUSTOMER
+}
+
+enum MemberLevel {
+  GOLD
+  SILVER
+  BRONZE
+}
+
+enum ProductStatus {
+  ON_SALE
+  OFF_SALE
+  DRAFT
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+enum PriceType {
+  AGENT_L1
+  AGENT_L2
+  AGENT_L3
+  MEMBER_GOLD
+  MEMBER_SILVER
+  MEMBER_BRONZE
+  RETAIL
+}
+
+model User {
+  id            String       @id @default(uuid())
+  openId        String?      @unique
+  phone         String?      @unique
+  nickname      String?
+  avatar        String?
+  password      String?
+  role          Role         @default(CUSTOMER)
+  memberLevel   MemberLevel  @default(BRONZE)
+  parentAgentId String?
+  parentAgent   User?        @relation("AgentTree", fields: [parentAgentId], references: [id])
+  children      User[]       @relation("AgentTree")
+  balance       Decimal      @default(0) @db.Decimal(10, 2)
+  bindCode      String?      @unique
+  frozen        Boolean      @default(false)
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  orders      Order[]
+  settlements Settlement[]
+
+  @@map("users")
+}
+
+model Category {
+  id        String     @id @default(uuid())
+  name      String
+  parentId  String?
+  parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children  Category[] @relation("CategoryTree")
+  sort      Int        @default(0)
+  products  Product[]
+  createdAt DateTime   @default(now())
+
+  @@map("categories")
+}
+
+model Product {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  images      String[]
+  categoryId  String
+  category    Category      @relation(fields: [categoryId], references: [id])
+  status      ProductStatus @default(DRAFT)
+  skus        Sku[]
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@map("products")
+}
+
+model Sku {
+  id        String     @id @default(uuid())
+  productId String
+  product   Product    @relation(fields: [productId], references: [id], onDelete: Cascade)
+  specs     Json
+  stock     Int        @default(0)
+  costPrice Decimal    @db.Decimal(10, 2)
+  prices    SkuPrice[]
+  createdAt DateTime   @default(now())
+
+  @@map("skus")
+}
+
+model SkuPrice {
+  id        String    @id @default(uuid())
+  skuId     String
+  sku       Sku       @relation(fields: [skuId], references: [id], onDelete: Cascade)
+  priceType PriceType
+  price     Decimal   @db.Decimal(10, 2)
+
+  @@unique([skuId, priceType])
+  @@map("sku_prices")
+}
+
+model Order {
+  id          String      @id @default(uuid())
+  orderNo     String      @unique
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  agentId     String?
+  totalAmount Decimal     @db.Decimal(10, 2)
+  status      OrderStatus @default(PENDING)
+  items       OrderItem[]
+  settlements Settlement[]
+  remark      String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  skuId     String
+  skuName   String
+  specs     Json
+  quantity  Int
+  unitPrice Decimal @db.Decimal(10, 2)
+
+  @@map("order_items")
+}
+
+model Settlement {
+  id          String   @id @default(uuid())
+  orderId     String
+  order       Order    @relation(fields: [orderId], references: [id])
+  agentId     String
+  agent       User     @relation(fields: [agentId], references: [id])
+  agentLevel  Role
+  profit      Decimal  @db.Decimal(10, 2)
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@map("settlements")
+}
