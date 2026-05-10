@@ -1,1 +1,169 @@
-.agent-center { padding: 20px; }
+.agent-center {
+  min-height: 100vh;
+  background: #f5f5f5;
+
+  &__banner {
+    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
+    padding: 48px 32px 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  &__banner-name {
+    font-size: 36px;
+    font-weight: 600;
+    color: #fff;
+  }
+
+  &__banner-role {
+    font-size: 24px;
+    color: rgba(255, 255, 255, 0.9);
+    background: rgba(255, 255, 255, 0.2);
+    padding: 4px 16px;
+    border-radius: 20px;
+  }
+
+  &__stats {
+    display: flex;
+    gap: 16px;
+    padding: 24px;
+  }
+
+  &__stat-card {
+    flex: 1;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 16px;
+    text-align: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  &__stat-value {
+    display: block;
+    font-size: 34px;
+    font-weight: 700;
+    color: #ff6b35;
+    margin-bottom: 10px;
+  }
+
+  &__stat-label {
+    display: block;
+    font-size: 22px;
+    color: #999;
+  }
+
+  &__section {
+    margin: 0 24px 24px;
+    background: #fff;
+    border-radius: 16px;
+    padding: 28px 28px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  }
+
+  &__section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+  }
+
+  &__section-title {
+    display: block;
+    font-size: 30px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 20px;
+  }
+
+  &__section-count {
+    font-size: 26px;
+    color: #999;
+  }
+
+  &__code-box {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #fff8f5;
+    border: 2px solid #ffe0d0;
+    border-radius: 12px;
+    padding: 24px 24px;
+  }
+
+  &__code-text {
+    font-size: 36px;
+    font-weight: 700;
+    color: #ff6b35;
+    letter-spacing: 4px;
+  }
+
+  &__copy-btn {
+    background: #ff6b35;
+    border-radius: 8px;
+    padding: 12px 28px;
+  }
+
+  &__copy-text {
+    font-size: 26px;
+    color: #fff;
+    font-weight: 500;
+  }
+
+  &__loading {
+    padding: 40px;
+    text-align: center;
+    color: #999;
+    font-size: 28px;
+  }
+
+  &__empty {
+    padding: 60px 0;
+    text-align: center;
+  }
+
+  &__empty-text {
+    font-size: 28px;
+    color: #bbb;
+  }
+
+  &__agent-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px 0;
+    border-bottom: 1px solid #f0f0f0;
+
+    &:last-child {
+      border-bottom: none;
+    }
+  }
+
+  &__agent-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  &__agent-name {
+    font-size: 30px;
+    color: #333;
+    font-weight: 500;
+  }
+
+  &__agent-role {
+    font-size: 22px;
+    color: #ff6b35;
+    background: #fff3ee;
+    padding: 4px 14px;
+    border-radius: 20px;
+  }
+
+  &__frozen-tag {
+    font-size: 22px;
+    color: #999;
+    background: #f0f0f0;
+    padding: 4px 14px;
+    border-radius: 20px;
+  }
+}
