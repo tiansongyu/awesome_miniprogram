@@ -6,6 +6,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { RedisModule } from './modules/redis/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { UserModule } from './modules/user/user.module';
+import { AgentModule } from './modules/agent/agent.module';
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { UserModule } from './modules/user/user.module';
     RedisModule,
     AuthModule,
     UserModule,
+    AgentModule,
   ],
 })
 export class AppModule {}
