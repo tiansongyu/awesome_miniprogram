@@ -223,6 +223,10 @@ export default function Products() {
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
+      if (skus.length === 0) {
+        message.warning('请至少添加一个SKU');
+        return;
+      }
       setSubmitting(true);
 
       const images = values.imageUrl ? [values.imageUrl] : [];
@@ -430,7 +434,7 @@ export default function Products() {
             <Input.TextArea rows={3} placeholder="请输入商品描述" />
           </Form.Item>
 
-          <Form.Item name="categoryId" label="分类">
+          <Form.Item name="categoryId" label="分类" rules={[{ required: true, message: '请选择分类' }]}>
             <Select allowClear placeholder="请选择分类">
               {flatCategories.map((c) => (
                 <Select.Option key={c.id} value={c.id}>
