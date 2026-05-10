@@ -1,0 +1,29 @@
+export default defineAppConfig({
+  pages: [
+    'pages/index/index',
+    'pages/category/index',
+    'pages/cart/index',
+    'pages/profile/index',
+    'pages/product-detail/index',
+    'pages/order-list/index',
+    'pages/order-detail/index',
+    'pages/agent-center/index',
+  ],
+  tabBar: {
+    color: '#999999',
+    selectedColor: '#ff6b35',
+    backgroundColor: '#ffffff',
+    list: [
+      { pagePath: 'pages/index/index', text: '首页', iconPath: 'assets/tab-home.png', selectedIconPath: 'assets/tab-home-active.png' },
+      { pagePath: 'pages/category/index', text: '分类', iconPath: 'assets/tab-category.png', selectedIconPath: 'assets/tab-category-active.png' },
+      { pagePath: 'pages/cart/index', text: '购物车', iconPath: 'assets/tab-cart.png', selectedIconPath: 'assets/tab-cart-active.png' },
+      { pagePath: 'pages/profile/index', text: '我的', iconPath: 'assets/tab-profile.png', selectedIconPath: 'assets/tab-profile-active.png' },
+    ],
+  },
+  window: {
+    backgroundTextStyle: 'light',
+    navigationBarBackgroundColor: '#ff6b35',
+    navigationBarTitleText: '代购商城',
+    navigationBarTextStyle: 'white',
+  },
+});
