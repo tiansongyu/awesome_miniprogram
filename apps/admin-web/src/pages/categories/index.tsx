@@ -1,7 +1,6 @@
 import { DeleteOutlined, EditOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { Button, Form, Input, InputNumber, Modal, Select, Space, Spin, Tree, message } from 'antd';
-import type { DataNode } from 'antd/es/tree';
 import { useEffect, useState } from 'react';
 import {
   type Category,
@@ -119,7 +118,7 @@ export default function Categories() {
     </Space>
   );
 
-  function buildTreeDataWithActions(cats: Category[]): DataNode[] {
+  function buildTreeDataWithActions(cats: Category[]): any[] {
     return cats.map((cat) => ({
       key: cat.id,
       title: renderTitle(cat),

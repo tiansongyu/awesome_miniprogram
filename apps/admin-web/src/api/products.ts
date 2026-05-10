@@ -72,12 +72,12 @@ export async function getProducts(params: ProductListParams): Promise<ProductLis
   return res as unknown as ProductListResult;
 }
 
-export async function createProduct(data: Partial<Product> & { skus?: Sku[] }): Promise<Product> {
+export async function createProduct(data: Record<string, unknown>): Promise<Product> {
   const res = await client.post('/products', data);
   return res as unknown as Product;
 }
 
-export async function updateProduct(id: string, data: Partial<Product> & { skus?: Sku[] }): Promise<Product> {
+export async function updateProduct(id: string, data: Record<string, unknown>): Promise<Product> {
   const res = await client.put(`/products/${id}`, data);
   return res as unknown as Product;
 }

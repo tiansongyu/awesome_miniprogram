@@ -224,7 +224,24 @@ export default function Products() {
     try {
       const values = await form.validateFields();
       setSubmitting(true);
-      const payload = { ...values, skus };
+
+      const images = values.imageUrl ? [values.imageUrl] : [];
+      const formattedSkus = skus.map((sku) => ({
+        specs: typeof sku.specs === 'string' ? JSON.parse(sku.specs || '{}') : sku.specs,
+        stock: sku.stock,
+        costPrice: sku.costPrice,
+        prices: sku.prices.map((p) => ({ priceType: p.type, price: p.price })),
+      }));
+
+      const payload = {
+        name: values.name,
+        description: values.description,
+        categoryId: values.categoryId,
+        images,
+        status: values.status,
+        skus: formattedSkus,
+      };
+
       if (editing) {
         await updateProduct(editing.id, payload);
         message.success('更新成功');
@@ -234,8 +251,9 @@ export default function Products() {
       }
       setDrawerOpen(false);
       actionRef.current?.reload();
-    } catch {
-      // validation errors are shown inline
+    } catch (e: unknown) {
+      if (e && typeof e === 'object' && 'errorFields' in e) return;
+      message.error(e instanceof Error ? e.message : '操作失败');
     } finally {
       setSubmitting(false);
     }
