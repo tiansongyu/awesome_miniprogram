@@ -7,6 +7,7 @@ import './index.scss';
 interface Category {
   id: string;
   name: string;
+  parentId?: string | null;
   children?: Category[];
 }
 
@@ -34,15 +35,17 @@ function getLowestPrice(skus: Sku[]): number {
   let lowest = Infinity;
   for (const sku of skus) {
     for (const p of sku.prices) {
-      if (p.price < lowest) lowest = p.price;
+      const val = Number(p.price);
+      if (val < lowest) lowest = val;
     }
   }
   return lowest === Infinity ? 0 : lowest;
 }
 
-export default function Category() {
+export default function CategoryPage() {
   const [categories, setCategories] = useState<Category[]>([]);
-  const [selectedId, setSelectedId] = useState<string>('');
+  const [selectedParentId, setSelectedParentId] = useState<string>('');
+  const [selectedChildId, setSelectedChildId] = useState<string>('');
   const [products, setProducts] = useState<Product[]>([]);
   const [page, setPage] = useState(1);
   const [total, setTotal] = useState(0);
@@ -62,25 +65,47 @@ export default function Category() {
     try {
       const data = await request<Category[]>({ url: '/categories' });
       setCategories(data);
-      const firstId = initialCatId || data[0]?.id || '';
-      setSelectedId(firstId);
+      if (initialCatId) {
+        const parent = data.find((c) => c.id === initialCatId);
+        if (parent) {
+          setSelectedParentId(parent.id);
+          setSelectedChildId('');
+        } else {
+          for (const cat of data) {
+            const child = cat.children?.find((c) => c.id === initialCatId);
+            if (child) {
+              setSelectedParentId(cat.id);
+              setSelectedChildId(child.id);
+              break;
+            }
+          }
+        }
+      } else {
+        const firstId = data[0]?.id || '';
+        setSelectedParentId(firstId);
+        setSelectedChildId('');
+      }
     } catch (_) {}
   }
 
+  const activeCategoryId = selectedChildId || selectedParentId;
+  const selectedParent = categories.find((c) => c.id === selectedParentId);
+  const childCategories = selectedParent?.children || [];
+
   useEffect(() => {
-    if (selectedId || keyword) {
+    if (activeCategoryId || keyword) {
       setPage(1);
       setProducts([]);
       loadProducts(1, true);
     }
-  }, [selectedId, keyword]);
+  }, [activeCategoryId, keyword]);
 
   async function loadProducts(pageNum: number, replace = false) {
     if (loading) return;
     setLoading(true);
     try {
-      const params: string[] = [`page=${pageNum}`, 'pageSize=20'];
-      if (selectedId) params.push(`categoryId=${selectedId}`);
+      const params: string[] = [`page=${pageNum}`, 'pageSize=20', 'status=ON_SALE'];
+      if (activeCategoryId) params.push(`categoryId=${activeCategoryId}`);
       if (keyword) params.push(`keyword=${encodeURIComponent(keyword)}`);
       const data = await request<{ items: Product[]; total: number; page: number; pageSize: number }>({
         url: `/products?${params.join('&')}`,
@@ -113,73 +138,108 @@ export default function Category() {
     Taro.navigateTo({ url: `/pages/product-detail/index?id=${id}` });
   }
 
+  function selectParent(id: string) {
+    setSelectedParentId(id);
+    setSelectedChildId('');
+  }
+
+  function selectChild(id: string) {
+    setSelectedChildId(id === selectedChildId ? '' : id);
+  }
+
   return (
     <View className="category-page">
-      {/* Left sidebar */}
+      {/* Left sidebar - top level categories */}
       <ScrollView scrollY className="sidebar">
         {categories.map((cat) => (
           <View
             key={cat.id}
-            className={`sidebar-item ${selectedId === cat.id ? 'active' : ''}`}
-            onClick={() => setSelectedId(cat.id)}
+            className={`sidebar-item ${selectedParentId === cat.id ? 'active' : ''}`}
+            onClick={() => selectParent(cat.id)}
           >
             <Text className="sidebar-text">{cat.name}</Text>
           </View>
         ))}
       </ScrollView>
 
-      {/* Right product grid */}
-      <ScrollView
-        scrollY
-        className="product-area"
-        refresherEnabled
-        refresherTriggered={refreshing}
-        onRefresherRefresh={handleRefresh}
-        onScrollToLower={handleScrollToLower}
-        lowerThreshold={100}
-      >
-        {keyword ? (
-          <View className="keyword-tip">
-            <Text>搜索: {keyword}</Text>
-          </View>
-        ) : null}
-
-        <View className="product-grid">
-          {products.map((product) => {
-            const price = getLowestPrice(product.skus);
-            const image = product.images?.[0] || '';
-            return (
-              <View key={product.id} className="product-card" onClick={() => goToProduct(product.id)}>
-                {image ? (
-                  <Image className="product-image" src={image} mode="aspectFill" />
-                ) : (
-                  <View className="product-image-placeholder" />
-                )}
-                <View className="product-info">
-                  <Text className="product-name">{product.name}</Text>
-                  <Text className="product-price">¥{price.toFixed(2)}</Text>
-                </View>
+      {/* Right content area */}
+      <View className="right-content">
+        {/* Sub-category tabs */}
+        {childCategories.length > 0 && (
+          <ScrollView scrollX className="sub-category-bar">
+            <View className="sub-category-list">
+              <View
+                className={`sub-category-item ${selectedChildId === '' ? 'active' : ''}`}
+                onClick={() => setSelectedChildId('')}
+              >
+                <Text className="sub-category-text">全部</Text>
               </View>
-            );
-          })}
-        </View>
+              {childCategories.map((child) => (
+                <View
+                  key={child.id}
+                  className={`sub-category-item ${selectedChildId === child.id ? 'active' : ''}`}
+                  onClick={() => selectChild(child.id)}
+                >
+                  <Text className="sub-category-text">{child.name}</Text>
+                </View>
+              ))}
+            </View>
+          </ScrollView>
+        )}
 
-        {loading && (
-          <View className="loading-tip">
-            <Text>加载中...</Text>
+        {/* Product grid */}
+        <ScrollView
+          scrollY
+          className="product-area"
+          refresherEnabled
+          refresherTriggered={refreshing}
+          onRefresherRefresh={handleRefresh}
+          onScrollToLower={handleScrollToLower}
+          lowerThreshold={100}
+        >
+          {keyword ? (
+            <View className="keyword-tip">
+              <Text>搜索: {keyword}</Text>
+            </View>
+          ) : null}
+
+          <View className="product-grid">
+            {products.map((product) => {
+              const price = getLowestPrice(product.skus);
+              const image = product.images?.[0] || '';
+              return (
+                <View key={product.id} className="product-card" onClick={() => goToProduct(product.id)}>
+                  {image ? (
+                    <Image className="product-image" src={image} mode="aspectFill" />
+                  ) : (
+                    <View className="product-image-placeholder" />
+                  )}
+                  <View className="product-info">
+                    <Text className="product-name">{product.name}</Text>
+                    <Text className="product-price">¥{price.toFixed(2)}</Text>
+                  </View>
+                </View>
+              );
+            })}
           </View>
-        )}
-        {!loading && products.length > 0 && products.length >= total && (
-          <View className="end-tip">
-            <Text>已加载全部</Text>
-          </View>
-        )}
-        {!loading && products.length === 0 && (
-          <View className="empty-tip">
-            <Text>暂无商品</Text>
-          </View>
-        )}
-      </ScrollView>
+
+          {loading && (
+            <View className="loading-tip">
+              <Text>加载中...</Text>
+            </View>
+          )}
+          {!loading && products.length > 0 && products.length >= total && (
+            <View className="end-tip">
+              <Text>已加载全部</Text>
+            </View>
+          )}
+          {!loading && products.length === 0 && (
+            <View className="empty-tip">
+              <Text>暂无商品</Text>
+            </View>
+          )}
+        </ScrollView>
+      </View>
     </View>
   );
 }

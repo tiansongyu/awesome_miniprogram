@@ -29,8 +29,8 @@ interface Product {
 
 function getSkuPrice(sku: Sku): number {
   const retail = sku.prices.find((p) => p.priceType === 'RETAIL');
-  if (retail) return retail.price;
-  return sku.prices[0]?.price ?? 0;
+  if (retail) return Number(retail.price);
+  return Number(sku.prices[0]?.price ?? 0);
 }
 
 function getSpecKeys(skus: Sku[]): string[] {

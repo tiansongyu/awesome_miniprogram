@@ -16,7 +16,12 @@ export default defineConfig({
   defineConstants: {},
   copy: { patterns: [], options: {} },
   framework: 'react',
-  compiler: 'webpack5',
+  compiler: {
+    type: 'webpack5',
+    prebundle: {
+      exclude: ['zustand', 'zustand/vanilla'],
+    },
+  },
   mini: {
     postcss: {
       pxtransform: { enable: true, config: {} },

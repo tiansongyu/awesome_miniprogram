@@ -33,10 +33,26 @@ export class ProductService {
     });
   }
 
+  private async getAllDescendantCategoryIds(parentId: string): Promise<string[]> {
+    const children = await this.prisma.category.findMany({
+      where: { parentId },
+      select: { id: true },
+    });
+    const ids: string[] = [parentId];
+    for (const child of children) {
+      const descendantIds = await this.getAllDescendantCategoryIds(child.id);
+      ids.push(...descendantIds);
+    }
+    return ids;
+  }
+
   async findAll(query: { page?: number; pageSize?: number; categoryId?: string; status?: ProductStatus; keyword?: string }) {
     const { page = 1, pageSize = 20, categoryId, status, keyword } = query;
     const where: any = {};
-    if (categoryId) where.categoryId = categoryId;
+    if (categoryId) {
+      const categoryIds = await this.getAllDescendantCategoryIds(categoryId);
+      where.categoryId = { in: categoryIds };
+    }
     if (status) where.status = status;
     if (keyword) where.name = { contains: keyword, mode: 'insensitive' };
 
@@ -92,11 +108,46 @@ export class ProductService {
 
   async update(id: string, dto: UpdateProductDto) {
     await this.findOne(id);
-    return this.prisma.product.update({
-      where: { id },
-      data: dto,
-      include: { skus: { include: { prices: true } } },
-    });
+    const { skus, ...basicFields } = dto;
+
+    if (skus) {
+      await this.prisma.$transaction(async (tx) => {
+        // Delete old SKUs and their prices
+        const oldSkus = await tx.sku.findMany({ where: { productId: id } });
+        for (const sku of oldSkus) {
+          await tx.skuPrice.deleteMany({ where: { skuId: sku.id } });
+        }
+        await tx.sku.deleteMany({ where: { productId: id } });
+
+        // Update basic fields and create new SKUs
+        await tx.product.update({
+          where: { id },
+          data: {
+            ...basicFields,
+            skus: {
+              create: skus.map((sku) => ({
+                specs: sku.specs,
+                stock: sku.stock,
+                costPrice: sku.costPrice,
+                prices: {
+                  create: sku.prices.map((p) => ({
+                    priceType: p.priceType,
+                    price: p.price,
+                  })),
+                },
+              })),
+            },
+          },
+        });
+      });
+    } else {
+      await this.prisma.product.update({
+        where: { id },
+        data: basicFields,
+      });
+    }
+
+    return this.findOne(id);
   }
 
   async updateStatus(id: string, status: ProductStatus) {

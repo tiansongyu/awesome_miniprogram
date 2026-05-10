@@ -8,8 +8,8 @@ export default () => ({
   },
   jwt: {
     secret: process.env.JWT_SECRET || 'dev-secret',
-    expiresIn: process.env.JWT_EXPIRES_IN || '15m',
-    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
+    expiresIn: process.env.JWT_EXPIRES_IN || '30d',
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '30d',
   },
   wechat: {
     appId: process.env.WECHAT_APP_ID,

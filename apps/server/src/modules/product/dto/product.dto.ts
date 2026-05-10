@@ -55,4 +55,10 @@ export class UpdateProductDto {
   @IsOptional()
   @IsEnum(ProductStatus)
   status?: ProductStatus;
+
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CreateSkuDto)
+  skus?: CreateSkuDto[];
 }

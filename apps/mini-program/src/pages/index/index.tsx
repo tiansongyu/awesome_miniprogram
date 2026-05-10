@@ -34,7 +34,8 @@ function getLowestPrice(skus: Sku[]): number {
   let lowest = Infinity;
   for (const sku of skus) {
     for (const p of sku.prices) {
-      if (p.price < lowest) lowest = p.price;
+      const val = Number(p.price);
+      if (val < lowest) lowest = val;
     }
   }
   return lowest === Infinity ? 0 : lowest;
@@ -62,7 +63,7 @@ export default function Index() {
     setLoading(true);
     try {
       const data = await request<{ items: Product[]; total: number; page: number; pageSize: number }>({
-        url: '/products?page=1&pageSize=10',
+        url: '/products?page=1&pageSize=10&status=ON_SALE',
       });
       setProducts(data.items);
     } catch (_) {

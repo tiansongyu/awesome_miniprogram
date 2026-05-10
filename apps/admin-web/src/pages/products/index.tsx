@@ -7,7 +7,7 @@ import {
   Form,
   Input,
   InputNumber,
-  Modal,
+  Popconfirm,
   Select,
   Space,
   Switch,
@@ -171,42 +171,43 @@ export default function Products() {
 
   const openEdit = (product: Product) => {
     setEditing(product);
-    form.setFieldsValue({
-      name: product.name,
-      description: product.description,
-      categoryId: product.categoryId,
-      imageUrl: product.imageUrl,
-      status: product.status,
-    });
     setSkus(
       product.skus && product.skus.length > 0
-        ? product.skus.map((s) => ({
+        ? product.skus.map((s: any) => ({
             ...s,
             specs: typeof s.specs === 'string' ? s.specs : JSON.stringify(s.specs),
-            prices: s.prices && s.prices.length > 0 ? s.prices : emptySkuPrices(),
+            stock: Number(s.stock),
+            costPrice: Number(s.costPrice),
+            prices:
+              s.prices && s.prices.length > 0
+                ? s.prices.map((p: any) => ({ type: p.priceType || p.type, price: Number(p.price) }))
+                : emptySkuPrices(),
           }))
         : [emptySkuRow()]
     );
     setDrawerOpen(true);
   };
 
-  const handleDelete = (product: Product) => {
-    Modal.confirm({
-      title: '确认删除',
-      content: `确定要删除商品「${product.name}」吗？`,
-      okText: '删除',
-      okType: 'danger',
-      cancelText: '取消',
-      onOk: async () => {
-        try {
-          await deleteProduct(product.id);
-          message.success('删除成功');
-          actionRef.current?.reload();
-        } catch {
-          message.error('删除失败');
-        }
-      },
-    });
+  useEffect(() => {
+    if (drawerOpen && editing) {
+      form.setFieldsValue({
+        name: editing.name,
+        description: editing.description,
+        categoryId: editing.categoryId,
+        imageUrl: editing.images?.[0] || '',
+        status: editing.status,
+      });
+    }
+  }, [drawerOpen, editing, form]);
+
+  const handleDelete = async (product: Product) => {
+    try {
+      await deleteProduct(product.id);
+      message.success('删除成功');
+      actionRef.current?.reload();
+    } catch {
+      message.error('删除失败');
+    }
   };
 
   const handleStatusToggle = async (product: Product) => {
@@ -232,19 +233,21 @@ export default function Products() {
       const images = values.imageUrl ? [values.imageUrl] : [];
       const formattedSkus = skus.map((sku) => ({
         specs: typeof sku.specs === 'string' ? JSON.parse(sku.specs || '{}') : sku.specs,
-        stock: sku.stock,
-        costPrice: sku.costPrice,
-        prices: sku.prices.map((p) => ({ priceType: p.type, price: p.price })),
+        stock: Number(sku.stock) || 0,
+        costPrice: Number(sku.costPrice) || 0,
+        prices: sku.prices.map((p) => ({ priceType: p.type, price: Number(p.price) || 0 })),
       }));
 
       const payload = {
         name: values.name,
-        description: values.description,
+        description: values.description || '',
         categoryId: values.categoryId,
         images,
-        status: values.status,
+        status: values.status || 'OFF_SALE',
         skus: formattedSkus,
       };
+
+      console.log('Submit payload:', JSON.stringify(payload, null, 2));
 
       if (editing) {
         await updateProduct(editing.id, payload);
@@ -256,6 +259,7 @@ export default function Products() {
       setDrawerOpen(false);
       actionRef.current?.reload();
     } catch (e: unknown) {
+      console.error('Submit error:', e);
       if (e && typeof e === 'object' && 'errorFields' in e) return;
       message.error(e instanceof Error ? e.message : '操作失败');
     } finally {
@@ -266,13 +270,13 @@ export default function Products() {
   const columns: ProColumns<Product>[] = [
     {
       title: '商品图片',
-      dataIndex: 'imageUrl',
+      dataIndex: 'images',
       search: false,
       width: 80,
       render: (_, record) =>
-        record.imageUrl ? (
+        record.images && record.images.length > 0 ? (
           <img
-            src={record.imageUrl}
+            src={record.images[0]}
             alt={record.name}
             style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4 }}
           />
@@ -351,14 +355,21 @@ export default function Products() {
             unCheckedChildren="下架"
             onChange={() => handleStatusToggle(record)}
           />
-          <Button
-            type="link"
-            size="small"
-            danger
-            onClick={() => handleDelete(record)}
+          <Popconfirm
+            title="确认删除"
+            description="确定要删除该商品吗？"
+            onConfirm={() => handleDelete(record)}
+            okText="删除"
+            cancelText="取消"
           >
-            删除
-          </Button>
+            <Button
+              type="link"
+              size="small"
+              danger
+            >
+              删除
+            </Button>
+          </Popconfirm>
         </Space>
       ),
     },
@@ -409,6 +420,7 @@ export default function Products() {
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         width={800}
+        forceRender
         footer={
           <div style={{ textAlign: 'right' }}>
             <Button style={{ marginRight: 8 }} onClick={() => setDrawerOpen(false)}>
@@ -419,7 +431,6 @@ export default function Products() {
             </Button>
           </div>
         }
-        destroyOnClose
       >
         <Form form={form} layout="vertical">
           <Form.Item

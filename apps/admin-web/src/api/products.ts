@@ -27,7 +27,7 @@ export interface Product {
   description?: string;
   categoryId?: string;
   category?: Category;
-  imageUrl?: string;
+  images?: string[];
   status: 'ON_SALE' | 'OFF_SALE';
   skus?: Sku[];
   createdAt: string;

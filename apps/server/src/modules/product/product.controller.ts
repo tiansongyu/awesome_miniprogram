@@ -39,9 +39,8 @@ export class ProductController {
   }
 
   @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  findOne(@Param('id') id: string, @CurrentUser() user: User) {
-    return this.productService.findOneForUser(id, user);
+  findOne(@Param('id') id: string) {
+    return this.productService.findOne(id);
   }
 
   @Post()
