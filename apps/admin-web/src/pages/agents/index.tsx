@@ -203,7 +203,7 @@ export default function Agents() {
               pageSize: params.pageSize,
             });
             return {
-              data: data.list,
+              data: data.items,
               total: data.total,
               success: true,
             };

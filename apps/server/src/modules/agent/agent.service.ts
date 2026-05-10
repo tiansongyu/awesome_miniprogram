@@ -21,9 +21,16 @@ export class AgentService {
   constructor(private prisma: PrismaService) {}
 
   async createSubAgent(currentUser: User, dto: CreateAgentDto) {
-    const allowedChildRole = ROLE_HIERARCHY[currentUser.role];
-    if (!allowedChildRole || dto.role !== allowedChildRole) {
-      throw new ForbiddenException('无权创建该级别代理');
+    if (currentUser.role === Role.SUPER_ADMIN) {
+      const agentRoles: string[] = [Role.AGENT_L1, Role.AGENT_L2, Role.AGENT_L3];
+      if (!agentRoles.includes(dto.role)) {
+        throw new ForbiddenException('无权创建该级别代理');
+      }
+    } else {
+      const allowedChildRole = ROLE_HIERARCHY[currentUser.role];
+      if (!allowedChildRole || dto.role !== allowedChildRole) {
+        throw new ForbiddenException('无权创建该级别代理');
+      }
     }
 
     const existing = await this.prisma.user.findUnique({

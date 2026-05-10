@@ -2,7 +2,7 @@ import client from './client';
 
 export async function getAgents(params: { page?: number; pageSize?: number }) {
   const res = await client.get('/agents', { params });
-  return res as unknown as { list: Agent[]; total: number };
+  return res as unknown as { items: Agent[]; total: number };
 }
 
 export async function getAgentTree() {
