@@ -1,10 +1,16 @@
 import client from './client';
 
-export const getOrders = (params?: Record<string, unknown>) =>
-  client.get('/orders', { params });
+export async function getOrders(params: { page?: number; pageSize?: number; status?: string }) {
+  const res = await client.get('/orders', { params });
+  return res.data;
+}
 
-export const getOrder = (id: number) =>
-  client.get(`/orders/${id}`);
+export async function getOrderDetail(id: string) {
+  const res = await client.get(`/orders/${id}`);
+  return res.data;
+}
 
-export const updateOrder = (id: number, data: Record<string, unknown>) =>
-  client.put(`/orders/${id}`, data);
+export async function updateOrderStatus(id: string, status: string) {
+  const res = await client.put(`/orders/${id}/status`, { status });
+  return res.data;
+}

@@ -1,7 +1,10 @@
 import client from './client';
 
-export const getSettlements = (params?: Record<string, unknown>) =>
+export const getSettlements = (params?: { page?: number; pageSize?: number }) =>
   client.get('/settlements', { params });
+
+export const getSettlementStats = () =>
+  client.get('/settlements/stats');
 
 export const getSettlement = (id: number) =>
   client.get(`/settlements/${id}`);
