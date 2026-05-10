@@ -78,15 +78,15 @@ export default function Settlements() {
           {
             title: '代理级别',
             dataIndex: 'agentLevel',
-            render: (level: Settlement['agentLevel']) => {
-              const cfg = agentLevelConfig[level];
+            render: (_, record) => {
+              const cfg = agentLevelConfig[record.agentLevel];
               return <Tag color={cfg.color}>{cfg.label}</Tag>;
             },
           },
           {
             title: '分润金额',
             dataIndex: 'profit',
-            render: (profit: number) => `¥${profit.toFixed(2)}`,
+            render: (_, record) => `¥${record.profit.toFixed(2)}`,
           },
           {
             title: '时间',

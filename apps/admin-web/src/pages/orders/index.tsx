@@ -49,7 +49,7 @@ const TAB_STATUSES = [
 ];
 
 export default function Orders() {
-  const actionRef = useRef<ActionType>();
+  const actionRef = useRef<ActionType>(null);
   const [activeTab, setActiveTab] = useState('ALL');
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [detail, setDetail] = useState<Order | null>(null);

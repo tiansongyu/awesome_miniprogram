@@ -11,14 +11,6 @@ import {
   updateCategory,
 } from '../../api/products';
 
-function buildTreeData(categories: Category[]): DataNode[] {
-  return categories.map((cat) => ({
-    key: cat.id,
-    title: cat.name,
-    children: cat.children ? buildTreeData(cat.children) : [],
-  }));
-}
-
 function flattenCategories(categories: Category[]): Category[] {
   const result: Category[] = [];
   function walk(list: Category[]) {

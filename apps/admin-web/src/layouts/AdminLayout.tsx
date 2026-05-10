@@ -10,7 +10,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 import { ProLayout } from '@ant-design/pro-components';
-import { Button, Dropdown } from 'antd';
+import { Dropdown } from 'antd';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../store/auth';
 

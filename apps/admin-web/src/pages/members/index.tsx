@@ -65,9 +65,9 @@ export default function Members() {
           {
             title: '头像',
             dataIndex: 'avatar',
-            render: (avatar: string) =>
-              avatar ? (
-                <Avatar src={avatar} />
+            render: (_, record) =>
+              record.avatar ? (
+                <Avatar src={record.avatar} />
               ) : (
                 <Avatar icon={<UserOutlined />} />
               ),
@@ -75,8 +75,8 @@ export default function Members() {
           {
             title: '会员等级',
             dataIndex: 'memberLevel',
-            render: (level: Member['memberLevel']) => {
-              const cfg = levelConfig[level];
+            render: (_, record) => {
+              const cfg = levelConfig[record.memberLevel];
               return <Tag color={cfg.color}>{cfg.label}</Tag>;
             },
           },
