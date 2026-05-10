@@ -1,1 +1,142 @@
-.order-list { padding: 20px; }
+.order-list {
+  min-height: 100vh;
+  background: #f5f5f5;
+
+  &__tabs {
+    display: flex;
+    background: #fff;
+    border-bottom: 1px solid #eee;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  &__tab {
+    flex: 1;
+    text-align: center;
+    padding: 24px 0;
+    font-size: 28px;
+    color: #666;
+
+    &--active {
+      color: #ff6b35;
+      border-bottom: 4px solid #ff6b35;
+      font-weight: 600;
+    }
+  }
+
+  &__body {
+    padding: 20px;
+  }
+
+  &__empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 120px 0;
+  }
+
+  &__empty-text {
+    font-size: 28px;
+    color: #999;
+  }
+
+  &__loading,
+  &__end {
+    display: flex;
+    justify-content: center;
+    padding: 30px 0;
+  }
+
+  &__loading-text,
+  &__end-text {
+    font-size: 24px;
+    color: #999;
+  }
+}
+
+.order-card {
+  background: #fff;
+  border-radius: 16px;
+  margin-bottom: 20px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+
+  &__header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
+  &__no {
+    font-size: 24px;
+    color: #666;
+  }
+
+  &__status {
+    font-size: 26px;
+    font-weight: 600;
+  }
+
+  &__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 16px 0;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  &__item-info {
+    flex: 1;
+    margin-right: 20px;
+  }
+
+  &__item-name {
+    font-size: 28px;
+    color: #333;
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  &__item-specs {
+    font-size: 24px;
+    color: #999;
+  }
+
+  &__item-right {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+  }
+
+  &__item-price {
+    font-size: 28px;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  &__item-qty {
+    font-size: 24px;
+    color: #999;
+  }
+
+  &__footer {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  &__total {
+    font-size: 26px;
+    color: #666;
+  }
+
+  &__total-amount {
+    font-size: 30px;
+    font-weight: 700;
+    color: #ff6b35;
+  }
+}
