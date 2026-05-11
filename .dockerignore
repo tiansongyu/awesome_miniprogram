@@ -1,0 +1,8 @@
+node_modules
+dist
+.git
+.env
+*.log
+apps/mini-program/dist
+apps/admin-web/dist
+apps/server/dist

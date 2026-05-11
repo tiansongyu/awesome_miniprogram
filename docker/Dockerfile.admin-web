@@ -1,0 +1,22 @@
+FROM node:20-alpine AS base
+RUN corepack enable && corepack prepare pnpm@9.15.4 --activate
+WORKDIR /app
+
+FROM base AS deps
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
+COPY apps/admin-web/package.json ./apps/admin-web/
+COPY packages/shared-types/package.json ./packages/shared-types/
+COPY packages/utils/package.json ./packages/utils/
+RUN pnpm install --frozen-lockfile
+
+FROM base AS builder
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/apps/admin-web/node_modules ./apps/admin-web/node_modules
+COPY --from=deps /app/packages ./packages
+COPY . .
+ENV VITE_API_BASE_URL=/api
+RUN pnpm --filter admin-web build
+
+FROM nginx:alpine AS runner
+COPY --from=builder /app/apps/admin-web/dist /usr/share/nginx/html
+EXPOSE 80

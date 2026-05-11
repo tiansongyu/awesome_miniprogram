@@ -48,15 +48,24 @@ services:
     environment:
       DATABASE_URL: postgresql://${DB_USER:-postgres}:${DB_PASSWORD:-postgres}@postgres:5432/${DB_NAME:-agent_saler}
       REDIS_URL: redis://:${REDIS_PASSWORD:-redis123}@redis:6379
-      JWT_SECRET: ${JWT_SECRET}
+      JWT_SECRET: ${JWT_SECRET:-your_jwt_secret_here}
       JWT_EXPIRES_IN: ${JWT_EXPIRES_IN:-15m}
       JWT_REFRESH_EXPIRES_IN: ${JWT_REFRESH_EXPIRES_IN:-7d}
-      WECHAT_APP_ID: ${WECHAT_APP_ID}
-      WECHAT_APP_SECRET: ${WECHAT_APP_SECRET}
+      WECHAT_APP_ID: ${WECHAT_APP_ID:-}
+      WECHAT_APP_SECRET: ${WECHAT_APP_SECRET:-}
       NODE_ENV: production
       PORT: 3000
     volumes:
       - uploads:/app/uploads
+    networks:
+      - internal
+
+  admin-web:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.admin-web
+    container_name: agent-saler-admin-web
+    restart: always
     networks:
       - internal
 
@@ -66,6 +75,7 @@ services:
     restart: always
     depends_on:
       - server
+      - admin-web
     ports:
       - "80:80"
       - "443:443"
