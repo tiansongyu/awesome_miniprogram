@@ -1,93 +1,156 @@
-import { View, Text } from '@tarojs/components';
+import { View, Text, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { request } from '../../utils/request';
 import './index.scss';
 
-interface Coupon {
+interface CouponItem {
   id: string;
   name: string;
-  type: 'amount' | 'discount';
+  type: 'AMOUNT' | 'DISCOUNT';
   value: number;
-  minSpend: number;
-  startDate: string;
-  endDate: string;
-  description?: string;
+  minAmount: number;
+  startTime: string;
+  endTime: string;
+  status: 'ACTIVE' | 'INACTIVE';
+  claimed?: boolean;
 }
 
-interface MyCoupon extends Coupon {
-  status: 'unused' | 'used' | 'expired';
-  receivedAt: string;
+interface MyCouponItem {
+  id: string;
+  couponId: string;
+  coupon: {
+    name: string;
+    type: 'AMOUNT' | 'DISCOUNT';
+    value: number;
+    minAmount: number;
+    startTime: string;
+    endTime: string;
+  };
+  status: 'UNUSED' | 'USED' | 'EXPIRED';
+  usedAt?: string;
+  createdAt: string;
 }
-
-const MOCK_AVAILABLE: Coupon[] = [
-  { id: '1', name: '新人专享券', type: 'amount', value: 20, minSpend: 100, startDate: '2026-05-01', endDate: '2026-06-30', description: '全场通用' },
-  { id: '2', name: '满减优惠', type: 'amount', value: 50, minSpend: 300, startDate: '2026-05-01', endDate: '2026-05-31', description: '部分商品可用' },
-  { id: '3', name: '会员折扣券', type: 'discount', value: 8.5, minSpend: 200, startDate: '2026-05-01', endDate: '2026-06-15', description: '全场通用' },
-];
-
-const MOCK_MY_COUPONS: MyCoupon[] = [
-  { id: '4', name: '开业大促券', type: 'amount', value: 10, minSpend: 50, startDate: '2026-05-01', endDate: '2026-06-30', status: 'unused', receivedAt: '2026-05-05', description: '全场通用' },
-  { id: '5', name: '限时折扣', type: 'discount', value: 9, minSpend: 100, startDate: '2026-04-01', endDate: '2026-04-30', status: 'expired', receivedAt: '2026-04-01', description: '全场通用' },
-  { id: '6', name: '满减券', type: 'amount', value: 30, minSpend: 200, startDate: '2026-03-01', endDate: '2026-03-31', status: 'used', receivedAt: '2026-03-01', description: '部分商品可用' },
-];
 
 type TabKey = 'available' | 'mine';
-type MyCouponFilter = 'unused' | 'used' | 'expired';
+type MyCouponFilter = 'UNUSED' | 'USED' | 'EXPIRED';
 
 export default function Coupons() {
   const [activeTab, setActiveTab] = useState<TabKey>('available');
-  const [availableList, setAvailableList] = useState<Coupon[]>([]);
-  const [myList, setMyList] = useState<MyCoupon[]>([]);
-  const [myFilter, setMyFilter] = useState<MyCouponFilter>('unused');
+  const [availableList, setAvailableList] = useState<CouponItem[]>([]);
+  const [myList, setMyList] = useState<MyCouponItem[]>([]);
+  const [myFilter, setMyFilter] = useState<MyCouponFilter>('UNUSED');
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    // TODO: replace with real API calls
-    setAvailableList(MOCK_AVAILABLE);
-    setMyList(MOCK_MY_COUPONS);
+  const fetchAvailable = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await request<CouponItem[]>({ url: '/coupons/available' });
+      setAvailableList(res);
+    } catch (e) {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
-  const handleClaim = (coupon: Coupon) => {
-    Taro.showToast({ title: '领取成功', icon: 'success' });
-    setAvailableList((prev) => prev.filter((c) => c.id !== coupon.id));
-    const claimed: MyCoupon = { ...coupon, status: 'unused', receivedAt: new Date().toISOString().slice(0, 10) };
-    setMyList((prev) => [claimed, ...prev]);
+  const fetchMyCoupons = useCallback(async () => {
+    try {
+      setLoading(true);
+      const res = await request<MyCouponItem[]>({ url: '/coupons/my' });
+      setMyList(res);
+    } catch (e) {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchAvailable();
+  }, [fetchAvailable]);
+
+  useEffect(() => {
+    if (activeTab === 'mine') {
+      fetchMyCoupons();
+    }
+  }, [activeTab, fetchMyCoupons]);
+
+  const handleClaim = async (coupon: CouponItem) => {
+    try {
+      await request({ url: `/coupons/${coupon.id}/claim`, method: 'POST' });
+      Taro.showToast({ title: '领取成功', icon: 'success' });
+      setAvailableList((prev) =>
+        prev.map((c) => (c.id === coupon.id ? { ...c, claimed: true } : c))
+      );
+    } catch (e) {
+      // error already handled by request util
+    }
   };
 
-  const formatValue = (coupon: Coupon) => {
-    if (coupon.type === 'amount') {
-      return { main: `¥${coupon.value}`, sub: `满${coupon.minSpend}可用` };
+  const formatDate = (iso: string) => {
+    return iso.slice(0, 10);
+  };
+
+  const formatValue = (type: 'AMOUNT' | 'DISCOUNT', value: number) => {
+    if (type === 'AMOUNT') {
+      return { main: `¥${value}`, sub: '' };
     }
-    return { main: `${coupon.value}折`, sub: `满${coupon.minSpend}可用` };
+    const discount = Math.round(value * 10);
+    return { main: `${discount}折`, sub: '' };
   };
 
   const filteredMyList = myList.filter((c) => c.status === myFilter);
 
-  const renderCouponCard = (coupon: Coupon | MyCoupon, showClaimBtn: boolean) => {
-    const { main, sub } = formatValue(coupon);
-    const status = 'status' in coupon ? coupon.status : 'unused';
-    const isInactive = status === 'used' || status === 'expired';
+  const renderAvailableCard = (coupon: CouponItem) => {
+    const { main } = formatValue(coupon.type, coupon.value);
+    const condition = `满${coupon.minAmount}可用`;
 
     return (
-      <View className={`coupon-card ${isInactive ? 'coupon-card--inactive' : ''}`} key={coupon.id}>
+      <View className={`coupon-card ${coupon.claimed ? 'coupon-card--inactive' : ''}`} key={coupon.id}>
         <View className="coupon-card__left">
           <Text className="coupon-card__value">{main}</Text>
-          <Text className="coupon-card__condition">{sub}</Text>
+          <Text className="coupon-card__condition">{condition}</Text>
         </View>
         <View className="coupon-card__right">
           <Text className="coupon-card__name">{coupon.name}</Text>
-          <Text className="coupon-card__desc">{coupon.description || ''}</Text>
           <Text className="coupon-card__date">
-            {coupon.startDate} ~ {coupon.endDate}
+            {formatDate(coupon.startTime)} ~ {formatDate(coupon.endTime)}
           </Text>
-          {showClaimBtn && (
+          {coupon.claimed ? (
+            <View className="coupon-card__btn coupon-card__btn--disabled">
+              <Text className="coupon-card__btn-text coupon-card__btn-text--disabled">已领取</Text>
+            </View>
+          ) : (
             <View className="coupon-card__btn" onClick={() => handleClaim(coupon)}>
-              <Text className="coupon-card__btn-text">立即领取</Text>
+              <Text className="coupon-card__btn-text">领取</Text>
             </View>
           )}
+        </View>
+      </View>
+    );
+  };
+
+  const renderMyCouponCard = (item: MyCouponItem) => {
+    const { main } = formatValue(item.coupon.type, item.coupon.value);
+    const condition = `满${item.coupon.minAmount}可用`;
+    const isInactive = item.status === 'USED' || item.status === 'EXPIRED';
+
+    return (
+      <View className={`coupon-card ${isInactive ? 'coupon-card--inactive' : ''}`} key={item.id}>
+        <View className="coupon-card__left">
+          <Text className="coupon-card__value">{main}</Text>
+          <Text className="coupon-card__condition">{condition}</Text>
+        </View>
+        <View className="coupon-card__right">
+          <Text className="coupon-card__name">{item.coupon.name}</Text>
+          <Text className="coupon-card__date">
+            {formatDate(item.coupon.startTime)} ~ {formatDate(item.coupon.endTime)}
+          </Text>
           {isInactive && (
             <View className="coupon-card__status-tag">
               <Text className="coupon-card__status-text">
-                {status === 'used' ? '已使用' : '已过期'}
+                {item.status === 'USED' ? '已使用' : '已过期'}
               </Text>
             </View>
           )}
@@ -116,15 +179,17 @@ export default function Coupons() {
 
       {/* Available tab */}
       {activeTab === 'available' && (
-        <View className="coupons__list">
-          {availableList.length === 0 ? (
-            <View className="coupons__empty">
-              <Text className="coupons__empty-text">暂无可领取的优惠券</Text>
-            </View>
-          ) : (
-            availableList.map((coupon) => renderCouponCard(coupon, true))
-          )}
-        </View>
+        <ScrollView scrollY className="coupons__scroll">
+          <View className="coupons__list">
+            {availableList.length === 0 && !loading ? (
+              <View className="coupons__empty">
+                <Text className="coupons__empty-text">暂无可领取的优惠券</Text>
+              </View>
+            ) : (
+              availableList.map((coupon) => renderAvailableCard(coupon))
+            )}
+          </View>
+        </ScrollView>
       )}
 
       {/* My coupons tab */}
@@ -132,33 +197,35 @@ export default function Coupons() {
         <View className="coupons__mine">
           <View className="coupons__filter">
             <View
-              className={`coupons__filter-item ${myFilter === 'unused' ? 'coupons__filter-item--active' : ''}`}
-              onClick={() => setMyFilter('unused')}
+              className={`coupons__filter-item ${myFilter === 'UNUSED' ? 'coupons__filter-item--active' : ''}`}
+              onClick={() => setMyFilter('UNUSED')}
             >
               <Text className="coupons__filter-text">未使用</Text>
             </View>
             <View
-              className={`coupons__filter-item ${myFilter === 'used' ? 'coupons__filter-item--active' : ''}`}
-              onClick={() => setMyFilter('used')}
+              className={`coupons__filter-item ${myFilter === 'USED' ? 'coupons__filter-item--active' : ''}`}
+              onClick={() => setMyFilter('USED')}
             >
               <Text className="coupons__filter-text">已使用</Text>
             </View>
             <View
-              className={`coupons__filter-item ${myFilter === 'expired' ? 'coupons__filter-item--active' : ''}`}
-              onClick={() => setMyFilter('expired')}
+              className={`coupons__filter-item ${myFilter === 'EXPIRED' ? 'coupons__filter-item--active' : ''}`}
+              onClick={() => setMyFilter('EXPIRED')}
             >
               <Text className="coupons__filter-text">已过期</Text>
             </View>
           </View>
-          <View className="coupons__list">
-            {filteredMyList.length === 0 ? (
-              <View className="coupons__empty">
-                <Text className="coupons__empty-text">暂无优惠券</Text>
-              </View>
-            ) : (
-              filteredMyList.map((coupon) => renderCouponCard(coupon, false))
-            )}
-          </View>
+          <ScrollView scrollY className="coupons__scroll">
+            <View className="coupons__list">
+              {filteredMyList.length === 0 && !loading ? (
+                <View className="coupons__empty">
+                  <Text className="coupons__empty-text">暂无优惠券</Text>
+                </View>
+              ) : (
+                filteredMyList.map((item) => renderMyCouponCard(item))
+              )}
+            </View>
+          </ScrollView>
         </View>
       )}
     </View>

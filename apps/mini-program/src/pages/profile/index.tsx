@@ -332,28 +332,31 @@ export default function Profile() {
           <Text className="profile__menu-arrow">›</Text>
         </View>
 
-        <View className="profile__menu-item profile__menu-item--value">
+        <View className="profile__menu-item profile__menu-item--value" onClick={() => Taro.navigateTo({ url: '/pages/points/index' })}>
           <Text className="profile__menu-icon">🎯</Text>
           <Text className="profile__menu-label">我的积分</Text>
           <Text className="profile__menu-value">
             {totalPoints}
           </Text>
+          <Text className="profile__menu-arrow">›</Text>
         </View>
 
-        <View className="profile__menu-item profile__menu-item--value">
+        <View className="profile__menu-item profile__menu-item--value" onClick={() => Taro.navigateTo({ url: '/pages/balance/index' })}>
           <Text className="profile__menu-icon">💰</Text>
           <Text className="profile__menu-label">我的余额</Text>
           <Text className="profile__menu-value">
             ¥{user?.balance ?? '--'}
           </Text>
+          <Text className="profile__menu-arrow">›</Text>
         </View>
 
-        <View className="profile__menu-item profile__menu-item--value">
+        <View className="profile__menu-item profile__menu-item--value" onClick={() => Taro.navigateTo({ url: '/pages/member-level/index' })}>
           <Text className="profile__menu-icon">⭐</Text>
           <Text className="profile__menu-label">会员等级</Text>
           <Text className="profile__menu-value">
             {memberInfo ? memberInfo.label : '--'}
           </Text>
+          <Text className="profile__menu-arrow">›</Text>
         </View>
 
         <View className="profile__menu-item" onClick={() => Taro.navigateTo({ url: '/pages/messages/index' })}>
@@ -371,7 +374,7 @@ export default function Profile() {
           <Text className="profile__menu-arrow">›</Text>
         </View>
 
-        <View className="profile__menu-item">
+        <View className="profile__menu-item" onClick={() => Taro.navigateTo({ url: '/pages/settings/index' })}>
           <Text className="profile__menu-icon">⚙️</Text>
           <Text className="profile__menu-label">设置</Text>
           <Text className="profile__menu-arrow">›</Text>

@@ -12,7 +12,9 @@
     "build:weapp": "taro build --type weapp",
     "dev:weapp": "taro build --type weapp --watch",
     "dev": "taro build --type weapp --watch",
-    "build": "taro build --type weapp"
+    "build": "taro build --type weapp",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "browserslist": [
     "last 3 versions",
@@ -42,11 +44,15 @@
     "@babel/preset-react": "^7.24.0",
     "@babel/preset-typescript": "^7.24.0",
     "@tarojs/webpack5-runner": "4.0.9",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "babel-preset-taro": "4.0.9",
+    "jsdom": "^25.0.1",
     "sass": "^1.80.0",
     "typescript": "^5.7.0",
+    "vitest": "^3.2.4",
     "webpack": "^5.90.0"
   }
 }

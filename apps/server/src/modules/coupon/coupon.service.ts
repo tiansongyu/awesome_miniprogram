@@ -100,6 +100,33 @@ export class CouponService {
     return userCoupon;
   }
 
+  async findAvailable(userId: string) {
+    const now = new Date();
+
+    // 查询所有有效的优惠券
+    const coupons = await this.prisma.coupon.findMany({
+      where: {
+        status: CouponStatus.ACTIVE,
+        startTime: { lte: now },
+        endTime: { gte: now },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    // 查询用户已领取的优惠券ID列表
+    const userCoupons = await this.prisma.userCoupon.findMany({
+      where: { userId },
+      select: { couponId: true },
+    });
+    const claimedIds = new Set(userCoupons.map((uc) => uc.couponId));
+
+    // 返回带 claimed 标记的优惠券列表
+    return coupons.map((coupon) => ({
+      ...coupon,
+      claimed: claimedIds.has(coupon.id),
+    }));
+  }
+
   async findMyCoupons(userId: string, status?: UserCouponStatus) {
     const where: any = { userId };
     if (status) {

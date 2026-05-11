@@ -12,4 +12,12 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsString()
+  oldPassword?: string;
+
+  @IsOptional()
+  @IsString()
+  newPassword?: string;
 }

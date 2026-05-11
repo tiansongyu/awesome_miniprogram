@@ -42,6 +42,12 @@ export class CouponController {
     });
   }
 
+  @Get('available')
+  @UseGuards(JwtAuthGuard)
+  findAvailable(@CurrentUser('id') userId: string) {
+    return this.couponService.findAvailable(userId);
+  }
+
   @Put(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.SUPER_ADMIN)

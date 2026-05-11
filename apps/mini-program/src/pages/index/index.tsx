@@ -1,5 +1,4 @@
-import { View, Text, Image, ScrollView } from '@tarojs/components';
-import { SearchBar } from '@nutui/nutui-react-taro';
+import { View, Text, Image, ScrollView, Input } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import { useState } from 'react';
 import { request, BASE_URL } from '../../utils/request';
@@ -90,13 +89,13 @@ export default function Index() {
     <View className="index-page">
       {/* Search bar */}
       <View className="search-bar">
-        <SearchBar
+        <Input
+          className="search-input"
           placeholder="搜索商品"
           value={keyword}
-          onChange={(val) => setKeyword(val)}
-          onSearch={handleSearch}
-          shape="round"
-          className="search-bar-input"
+          onInput={(e) => setKeyword(e.detail.value)}
+          confirmType="search"
+          onConfirm={handleSearch}
         />
       </View>
 

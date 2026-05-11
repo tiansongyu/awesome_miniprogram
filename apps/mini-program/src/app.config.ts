@@ -14,6 +14,10 @@ export default defineAppConfig({
     'pages/review/index',
     'pages/refund/index',
     'pages/messages/index',
+    'pages/points/index',
+    'pages/balance/index',
+    'pages/member-level/index',
+    'pages/settings/index',
   ],
   tabBar: {
     color: '#999999',

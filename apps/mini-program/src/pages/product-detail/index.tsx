@@ -85,8 +85,11 @@ export default function ProductDetail() {
     const id = params.id as string;
     if (id) {
       loadProduct(id);
-      loadFavoriteStatus(id);
       loadReviews(id);
+      const token = Taro.getStorageSync('token');
+      if (token) {
+        loadFavoriteStatus(id);
+      }
     }
   });
 

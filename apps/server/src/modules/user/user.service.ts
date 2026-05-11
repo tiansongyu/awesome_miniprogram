@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Role, MemberLevel } from '@prisma/client';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -27,9 +28,41 @@ export class UserService {
   }
 
   async updateProfile(userId: string, dto: UpdateUserDto) {
+    // 处理密码修改
+    if (dto.oldPassword && dto.newPassword) {
+      const user = await this.prisma.user.findUnique({
+        where: { id: userId },
+        select: { password: true },
+      });
+      if (!user || !user.password) {
+        throw new BadRequestException('旧密码错误');
+      }
+      const isMatch = await bcrypt.compare(dto.oldPassword, user.password);
+      if (!isMatch) {
+        throw new BadRequestException('旧密码错误');
+      }
+      const hashedPassword = await bcrypt.hash(dto.newPassword, 10);
+      // 去掉密码字段，用加密后的密码更新
+      const { oldPassword, newPassword, ...rest } = dto;
+      return this.prisma.user.update({
+        where: { id: userId },
+        data: { ...rest, password: hashedPassword },
+        select: {
+          id: true,
+          nickname: true,
+          avatar: true,
+          phone: true,
+          role: true,
+          memberLevel: true,
+        },
+      });
+    }
+
+    // 普通更新（排除密码字段）
+    const { oldPassword, newPassword, ...data } = dto;
     return this.prisma.user.update({
       where: { id: userId },
-      data: dto,
+      data,
       select: {
         id: true,
         nickname: true,

@@ -63,6 +63,35 @@ async function main() {
     },
   });
 
+  // 测试用户 - 普通用户
+  const userPassword = await bcrypt.hash('user123', 10);
+  const testUser = await prisma.user.upsert({
+    where: { phone: '13900000001' },
+    update: {},
+    create: {
+      phone: '13900000001',
+      nickname: '测试用户',
+      password: userPassword,
+      role: Role.CUSTOMER,
+      memberLevel: MemberLevel.BRONZE,
+    },
+  });
+
+  // 测试用户 - 一级代理
+  const testAgentPassword = await bcrypt.hash('agent123', 10);
+  const testAgent = await prisma.user.upsert({
+    where: { phone: '13800000001' },
+    update: {},
+    create: {
+      phone: '13800000001',
+      nickname: '一级代理',
+      password: testAgentPassword,
+      role: Role.AGENT_L1,
+      memberLevel: MemberLevel.GOLD,
+      bindCode: 'AGENT1A',
+    },
+  });
+
   // Create category
   const category = await prisma.category.upsert({
     where: { id: 'seed-category-skincare' },
@@ -112,6 +141,8 @@ async function main() {
   console.log('Agent L1: 13800000001 / agent123');
   console.log('Agent L2: 13800000002 / agent123');
   console.log('Agent L3: 13800000003 / agent123');
+  console.log('Test User: 13900000001 / user123');
+  console.log('Test Agent L1: 13800000001 / agent123');
 }
 
 main()

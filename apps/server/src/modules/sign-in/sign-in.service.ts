@@ -87,6 +87,23 @@ export class SignInService {
     return { records, total, page, pageSize };
   }
 
+  /** 获取积分历史 */
+  async getPointsLog(userId: string, page = 1, pageSize = 20) {
+    const skip = (page - 1) * pageSize;
+
+    const [records, total] = await Promise.all([
+      this.prisma.pointsLog.findMany({
+        where: { userId },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: pageSize,
+      }),
+      this.prisma.pointsLog.count({ where: { userId } }),
+    ]);
+
+    return { records, total, page, pageSize };
+  }
+
   /** 计算连续签到天数（不含今天） */
   private async getConsecutiveDays(userId: string): Promise<number> {
     const records = await this.prisma.signIn.findMany({

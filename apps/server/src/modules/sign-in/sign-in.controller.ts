@@ -30,4 +30,17 @@ export class SignInController {
       pageSize ? parseInt(pageSize, 10) : 20,
     );
   }
+
+  @Get('points-log')
+  async getPointsLog(
+    @CurrentUser('id') userId: string,
+    @Query('page') page?: string,
+    @Query('pageSize') pageSize?: string,
+  ) {
+    return this.signInService.getPointsLog(
+      userId,
+      page ? parseInt(page, 10) : 1,
+      pageSize ? parseInt(pageSize, 10) : 20,
+    );
+  }
 }
