@@ -374,6 +374,18 @@ export default function Profile() {
           <Text className="profile__menu-arrow">›</Text>
         </View>
 
+        <View className="profile__menu-item" onClick={() => Taro.navigateTo({ url: '/pages/group-orders/index' })}>
+          <Text className="profile__menu-icon">👥</Text>
+          <Text className="profile__menu-label">我的拼团</Text>
+          <Text className="profile__menu-arrow">›</Text>
+        </View>
+
+        <View className="profile__menu-item" onClick={() => Taro.switchTab({ url: '/pages/community/index' })}>
+          <Text className="profile__menu-icon">📸</Text>
+          <Text className="profile__menu-label">买家秀</Text>
+          <Text className="profile__menu-arrow">›</Text>
+        </View>
+
         <View className="profile__menu-item" onClick={() => Taro.navigateTo({ url: '/pages/settings/index' })}>
           <Text className="profile__menu-icon">⚙️</Text>
           <Text className="profile__menu-label">设置</Text>

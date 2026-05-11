@@ -14,6 +14,7 @@ import { RolesGuard } from '../../common/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { CurrentUser } from '../../common/decorators/current-user.decorator';
 import { Role, RefundStatus } from '@prisma/client';
+import { CreateRefundDto } from './create-refund.dto';
 
 @Controller('refunds')
 @UseGuards(JwtAuthGuard)
@@ -24,7 +25,7 @@ export class RefundController {
   @Post()
   create(
     @CurrentUser('id') userId: string,
-    @Body() body: { orderId: string; reason: string },
+    @Body() body: CreateRefundDto,
   ) {
     return this.refundService.create(userId, body);
   }

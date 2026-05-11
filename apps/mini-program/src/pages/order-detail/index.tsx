@@ -14,7 +14,7 @@ const STATUS_MAP: Record<string, { label: string; bgColor: string; textColor: st
 
 interface OrderItem {
   skuName: string;
-  specs: string;
+  specs: Record<string, string> | string;
   quantity: number;
   unitPrice: number;
   image?: string;
@@ -229,7 +229,7 @@ export default function OrderDetail() {
             )}
             <View className="order-detail__item-info">
               <Text className="order-detail__item-name">{item.skuName}</Text>
-              {item.specs ? <Text className="order-detail__item-specs">{item.specs}</Text> : null}
+              {item.specs ? <Text className="order-detail__item-specs">{typeof item.specs === 'string' ? item.specs : Object.values(item.specs).join(' / ')}</Text> : null}
             </View>
             <View className="order-detail__item-right">
               <Text className="order-detail__item-price">¥{Number(item.unitPrice).toFixed(2)}</Text>

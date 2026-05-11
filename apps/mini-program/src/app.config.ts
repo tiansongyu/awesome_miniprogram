@@ -18,6 +18,11 @@ export default defineAppConfig({
     'pages/balance/index',
     'pages/member-level/index',
     'pages/settings/index',
+    'pages/search/index',
+    'pages/group-buy-list/index',
+    'pages/group-buy-detail/index',
+    'pages/group-orders/index',
+    'pages/community/index',
   ],
   tabBar: {
     color: '#999999',
@@ -26,6 +31,7 @@ export default defineAppConfig({
     list: [
       { pagePath: 'pages/index/index', text: '首页', iconPath: 'assets/tab-home.png', selectedIconPath: 'assets/tab-home-active.png' },
       { pagePath: 'pages/category/index', text: '分类', iconPath: 'assets/tab-category.png', selectedIconPath: 'assets/tab-category-active.png' },
+      { pagePath: 'pages/community/index', text: '买家秀', iconPath: 'assets/tab-community.png', selectedIconPath: 'assets/tab-community-active.png' },
       { pagePath: 'pages/cart/index', text: '购物车', iconPath: 'assets/tab-cart.png', selectedIconPath: 'assets/tab-cart-active.png' },
       { pagePath: 'pages/profile/index', text: '我的', iconPath: 'assets/tab-profile.png', selectedIconPath: 'assets/tab-profile-active.png' },
     ],

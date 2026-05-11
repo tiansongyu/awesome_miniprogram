@@ -70,7 +70,7 @@ export async function deleteCategory(id: string): Promise<void> {
 }
 
 export async function getProducts(params: ProductListParams): Promise<ProductListResult> {
-  const res = await client.get('/products', { params });
+  const res = await client.get('/products/mine', { params });
   return res as unknown as ProductListResult;
 }
 

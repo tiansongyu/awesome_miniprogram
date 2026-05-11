@@ -21,6 +21,8 @@ import { FavoriteModule } from './modules/favorite/favorite.module';
 import { ReviewModule } from './modules/review/review.module';
 import { MessageModule } from './modules/message/message.module';
 import { RefundModule } from './modules/refund/refund.module';
+import { GroupBuyModule } from './modules/group-buy/group-buy.module';
+import { CommunityModule } from './modules/community/community.module';
 
 @Module({
   imports: [
@@ -53,6 +55,8 @@ import { RefundModule } from './modules/refund/refund.module';
     ReviewModule,
     MessageModule,
     RefundModule,
+    GroupBuyModule,
+    CommunityModule,
   ],
 })
 export class AppModule {}

@@ -11,7 +11,7 @@ export interface Refund {
 }
 
 export async function getRefunds(params: { page?: number; pageSize?: number; status?: string }) {
-  const res = await client.get('/refunds/admin', { params });
+  const res = await client.get('/refunds', { params });
   return res as unknown as { items: Refund[]; total: number; page: number; pageSize: number };
 }
 

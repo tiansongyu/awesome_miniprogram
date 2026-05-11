@@ -1,0 +1,202 @@
+.group-buy-detail-page {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 120rpx;
+
+  .loading {
+    text-align: center;
+    padding: 100rpx;
+    color: #999;
+  }
+
+  .product-section {
+    background: #fff;
+    margin-bottom: 20rpx;
+
+    .product-image {
+      width: 100%;
+      height: 500rpx;
+      display: block;
+    }
+
+    .product-info {
+      padding: 24rpx;
+
+      .product-name {
+        font-size: 32rpx;
+        color: #333;
+        font-weight: bold;
+        margin-bottom: 20rpx;
+      }
+
+      .price-row {
+        display: flex;
+        gap: 40rpx;
+        margin-bottom: 16rpx;
+
+        .group-price-box,
+        .original-price-box {
+          .label {
+            font-size: 22rpx;
+            color: #999;
+            display: block;
+            margin-bottom: 4rpx;
+          }
+
+          .price {
+            font-size: 36rpx;
+            font-weight: bold;
+          }
+        }
+
+        .group-price-box .price {
+          color: #ff4535;
+        }
+
+        .original-price-box .price {
+          color: #999;
+          text-decoration: line-through;
+          font-size: 28rpx;
+        }
+      }
+
+      .rule-row {
+        .rule {
+          font-size: 24rpx;
+          color: #ff6b35;
+          background: #fff5f0;
+          padding: 8rpx 16rpx;
+          border-radius: 8rpx;
+        }
+      }
+    }
+  }
+
+  .groups-section {
+    background: #fff;
+    padding: 24rpx;
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20rpx;
+
+      .section-title {
+        font-size: 30rpx;
+        font-weight: bold;
+        color: #333;
+      }
+
+      .section-count {
+        font-size: 24rpx;
+        color: #999;
+      }
+    }
+
+    .no-groups {
+      text-align: center;
+      padding: 40rpx;
+      color: #999;
+      font-size: 26rpx;
+    }
+
+    .group-card {
+      display: flex;
+      align-items: center;
+      padding: 20rpx 0;
+      border-bottom: 1rpx solid #f5f5f5;
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .group-leader {
+        display: flex;
+        align-items: center;
+        flex: 1;
+
+        .leader-avatar {
+          width: 64rpx;
+          height: 64rpx;
+          border-radius: 50%;
+          margin-right: 12rpx;
+        }
+
+        .leader-avatar-placeholder {
+          width: 64rpx;
+          height: 64rpx;
+          border-radius: 50%;
+          background: #f0f0f0;
+          margin-right: 12rpx;
+        }
+
+        .leader-name {
+          font-size: 26rpx;
+          color: #333;
+        }
+      }
+
+      .group-meta {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        margin-right: 20rpx;
+
+        .group-need {
+          font-size: 24rpx;
+          color: #ff4535;
+          margin-bottom: 4rpx;
+        }
+
+        .group-countdown {
+          font-size: 20rpx;
+          color: #999;
+        }
+      }
+
+      .group-join-btn {
+        background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
+        color: #fff;
+        font-size: 24rpx;
+        padding: 12rpx 24rpx;
+        border-radius: 32rpx;
+        font-weight: bold;
+      }
+    }
+  }
+
+  .bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #fff;
+    padding: 20rpx 32rpx;
+    box-shadow: 0 -4rpx 16rpx rgba(0, 0, 0, 0.06);
+    display: flex;
+    gap: 20rpx;
+
+    .btn-product {
+      flex: 1;
+      text-align: center;
+      padding: 20rpx;
+      border: 2rpx solid #ff6b35;
+      border-radius: 40rpx;
+      color: #ff6b35;
+      font-size: 28rpx;
+      font-weight: bold;
+    }
+
+    .btn-initiate {
+      flex: 1;
+      text-align: center;
+      padding: 20rpx;
+      background: linear-gradient(135deg, #ff9a56 0%, #ff4535 100%);
+      border-radius: 40rpx;
+      color: #fff;
+      font-size: 28rpx;
+      font-weight: bold;
+    }
+  }
+}

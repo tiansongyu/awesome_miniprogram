@@ -2,6 +2,7 @@ import { View, Text, Image, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import { useState, useEffect } from 'react';
 import { request, BASE_URL } from '../../utils/request';
+import { useCartStore } from '../../store/cart';
 import './index.scss';
 
 interface Category {
@@ -29,6 +30,8 @@ interface Product {
   name: string;
   images: string[];
   skus: Sku[];
+  salesCount?: number;
+  warehouse?: string;
 }
 
 function getLowestPrice(skus: Sku[]): number {
@@ -52,6 +55,8 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [keyword, setKeyword] = useState('');
+  const [sortBy, setSortBy] = useState('default');
+  const addItem = useCartStore((s) => s.addItem);
 
   useDidShow(() => {
     const params = Taro.getCurrentInstance().router?.params || {};
@@ -109,7 +114,7 @@ export default function CategoryPage() {
       setProducts([]);
       loadProducts(1, true);
     }
-  }, [activeCategoryId, keyword]);
+  }, [activeCategoryId, keyword, sortBy]);
 
   async function loadProducts(pageNum: number, replace = false) {
     if (loading) return;
@@ -118,6 +123,7 @@ export default function CategoryPage() {
       const params: string[] = [`page=${pageNum}`, 'pageSize=20', 'status=ON_SALE'];
       if (activeCategoryId) params.push(`categoryId=${activeCategoryId}`);
       if (keyword) params.push(`keyword=${encodeURIComponent(keyword)}`);
+      if (sortBy !== 'default') params.push(`sortBy=${sortBy}`);
       const data = await request<{ items: Product[]; total: number; page: number; pageSize: number }>({
         url: `/products?${params.join('&')}`,
       });
@@ -147,6 +153,27 @@ export default function CategoryPage() {
 
   function goToProduct(id: string) {
     Taro.navigateTo({ url: `/pages/product-detail/index?id=${id}` });
+  }
+
+  function handleQuickAdd(e: any, product: Product) {
+    e.stopPropagation();
+    const sku = product.skus[0];
+    if (!sku) return;
+    const retailPrice = sku.prices.find((p) => p.priceType === 'RETAIL');
+    addItem({
+      skuId: sku.id,
+      productName: product.name,
+      specs: sku.specs,
+      price: Number(retailPrice?.price || sku.costPrice),
+      image: product.images?.[0] || '',
+      quantity: 1,
+    });
+    Taro.showToast({ title: '已加入购物车', icon: 'success', duration: 1000 });
+  }
+
+  function handleSortChange(sort: string) {
+    if (sort === sortBy) return;
+    setSortBy(sort);
   }
 
   function selectParent(id: string) {
@@ -198,6 +225,22 @@ export default function CategoryPage() {
           </ScrollView>
         )}
 
+        {/* Sort bar */}
+        <View className="sort-bar">
+          <View className={`sort-item ${sortBy === 'default' ? 'active' : ''}`} onClick={() => handleSortChange('default')}>
+            <Text>综合</Text>
+          </View>
+          <View className={`sort-item ${sortBy === 'newest' ? 'active' : ''}`} onClick={() => handleSortChange('newest')}>
+            <Text>最新</Text>
+          </View>
+          <View className={`sort-item ${sortBy === 'sales' ? 'active' : ''}`} onClick={() => handleSortChange('sales')}>
+            <Text>销量</Text>
+          </View>
+          <View className={`sort-item ${sortBy === 'priceAsc' ? 'active' : sortBy === 'priceDesc' ? 'active' : ''}`} onClick={() => handleSortChange(sortBy === 'priceAsc' ? 'priceDesc' : 'priceAsc')}>
+            <Text>价格{sortBy === 'priceAsc' ? '↑' : sortBy === 'priceDesc' ? '↓' : ''}</Text>
+          </View>
+        </View>
+
         {/* Product grid */}
         <ScrollView
           scrollY
@@ -220,6 +263,7 @@ export default function CategoryPage() {
           <View className="product-grid">
             {products.map((product) => {
               const price = getLowestPrice(product.skus);
+              const totalStock = product.skus.reduce((sum, s) => sum + s.stock, 0);
               const image = product.images?.[0] || '';
               const imageSrc = image.startsWith('http') ? image : `${BASE_URL}${image}`;
               return (
@@ -231,7 +275,16 @@ export default function CategoryPage() {
                   )}
                   <View className="product-info">
                     <Text className="product-name">{product.name}</Text>
-                    <Text className="product-price">¥{price.toFixed(2)}</Text>
+                    <View className="product-meta">
+                      {product.warehouse && <Text className="product-warehouse">{product.warehouse}</Text>}
+                      <Text className="product-stock">库存{totalStock}件</Text>
+                    </View>
+                    <View className="product-bottom">
+                      <Text className="product-price">¥{price.toFixed(2)}</Text>
+                      <View className="product-cart-btn" onClick={(e) => handleQuickAdd(e, product)}>
+                        <Text>+</Text>
+                      </View>
+                    </View>
                   </View>
                 </View>
               );

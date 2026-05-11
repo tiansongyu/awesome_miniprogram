@@ -7,7 +7,7 @@ import { User, Role, MemberLevel, PriceType, ProductStatus } from '@prisma/clien
 export class ProductService {
   constructor(private prisma: PrismaService) {}
 
-  async create(dto: CreateProductDto) {
+  async create(dto: CreateProductDto, ownerId?: string) {
     return this.prisma.product.create({
       data: {
         name: dto.name,
@@ -15,6 +15,7 @@ export class ProductService {
         detail: dto.detail,
         images: dto.images,
         categoryId: dto.categoryId,
+        ownerId: ownerId || null,
         status: dto.status || ProductStatus.DRAFT,
         skus: {
           create: dto.skus.map((sku) => ({
@@ -47,8 +48,8 @@ export class ProductService {
     return ids;
   }
 
-  async findAll(query: { page?: number; pageSize?: number; categoryId?: string; status?: ProductStatus; keyword?: string }) {
-    const { page = 1, pageSize = 20, categoryId, status, keyword } = query;
+  async findAll(query: { page?: number; pageSize?: number; categoryId?: string; status?: ProductStatus; keyword?: string; sortBy?: string; ownerId?: string }) {
+    const { page = 1, pageSize = 20, categoryId, status, keyword, sortBy, ownerId } = query;
     const where: any = {};
     if (categoryId) {
       const categoryIds = await this.getAllDescendantCategoryIds(categoryId);
@@ -56,17 +57,32 @@ export class ProductService {
     }
     if (status) where.status = status;
     if (keyword) where.name = { contains: keyword, mode: 'insensitive' };
+    if (ownerId) where.ownerId = ownerId;
+
+    let orderBy: any = { createdAt: 'desc' };
+    if (sortBy === 'newest') orderBy = { createdAt: 'desc' };
+    else if (sortBy === 'sales') orderBy = { salesCount: 'desc' };
 
     const [items, total] = await Promise.all([
       this.prisma.product.findMany({
         where,
         skip: (page - 1) * pageSize,
         take: pageSize,
-        orderBy: { createdAt: 'desc' },
+        orderBy,
         include: { skus: { include: { prices: true } }, category: true },
       }),
       this.prisma.product.count({ where }),
     ]);
+
+    // Handle price sorting in memory
+    if (sortBy === 'priceAsc' || sortBy === 'priceDesc') {
+      items.sort((a, b) => {
+        const aPrice = Math.min(...a.skus.flatMap(s => s.prices.filter(p => p.priceType === 'RETAIL').map(p => Number(p.price)))) || 0;
+        const bPrice = Math.min(...b.skus.flatMap(s => s.prices.filter(p => p.priceType === 'RETAIL').map(p => Number(p.price)))) || 0;
+        return sortBy === 'priceAsc' ? aPrice - bPrice : bPrice - aPrice;
+      });
+    }
+
     return { items, total, page, pageSize };
   }
 

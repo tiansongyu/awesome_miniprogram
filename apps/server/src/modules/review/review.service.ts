@@ -8,9 +8,10 @@ export class ReviewService {
   /** 用户提交评价（订单必须已完成） */
   async create(
     userId: string,
-    data: { orderId: string; productId: string; rating: number; content?: string; images?: string[] },
+    data: { orderId: string; productId?: string; rating: number; content?: string; images?: string[] },
   ) {
-    const { orderId, productId, rating, content, images } = data;
+    const { orderId, rating, content, images } = data;
+    let { productId } = data;
 
     if (rating < 1 || rating > 5) {
       throw new BadRequestException('评分必须在 1-5 之间');
@@ -32,15 +33,25 @@ export class ReviewService {
       throw new BadRequestException('只能评价已完成的订单');
     }
 
-    // 验证商品在订单中
-    const hasProduct = order.items.some((item) => item.skuId === productId) ||
-      await this.prisma.orderItem.findFirst({
-        where: {
-          orderId,
-          order: { items: { some: { orderId } } },
-        },
-        include: { order: true },
+    // 如果没有传 productId，从订单第一个 item 的 sku 获取
+    const skuIds = order.items.map((item) => item.skuId);
+    if (!productId) {
+      const firstSku = await this.prisma.sku.findFirst({
+        where: { id: { in: skuIds } },
       });
+      if (!firstSku) {
+        throw new BadRequestException('订单商品信息异常');
+      }
+      productId = firstSku.productId;
+    } else {
+      // 验证商品在订单中
+      const matchingSku = await this.prisma.sku.findFirst({
+        where: { id: { in: skuIds }, productId },
+      });
+      if (!matchingSku) {
+        throw new BadRequestException('该商品不在此订单中');
+      }
+    }
 
     // 检查是否已评价
     const existing = await this.prisma.review.findUnique({

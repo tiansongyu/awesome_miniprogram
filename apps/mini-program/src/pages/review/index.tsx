@@ -28,7 +28,7 @@ export default function ReviewPage() {
           (filePath) =>
             new Promise<string>((resolve, reject) => {
               Taro.uploadFile({
-                url: `${BASE_URL}/upload`,
+                url: `${BASE_URL}/upload/image`,
                 filePath,
                 name: 'file',
                 header: {
@@ -66,16 +66,17 @@ export default function ReviewPage() {
     }
     setSubmitting(true);
     try {
+      const data: any = {
+        orderId,
+        rating,
+        content: content.trim(),
+        images,
+      };
+      if (productId) data.productId = productId;
       await request({
         url: '/reviews',
         method: 'POST',
-        data: {
-          orderId,
-          productId,
-          rating,
-          content: content.trim(),
-          images,
-        },
+        data,
       });
       Taro.showToast({ title: '评价成功', icon: 'success' });
       setTimeout(() => {

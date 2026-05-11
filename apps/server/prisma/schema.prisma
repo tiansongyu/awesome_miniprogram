@@ -30,6 +30,7 @@ enum ProductStatus {
 enum OrderStatus {
   PENDING
   PAID
+  GROUPING
   SHIPPED
   COMPLETED
   CANCELLED
@@ -81,6 +82,9 @@ model User {
   reviews     Review[]
   messages    Message[]
   refunds     Refund[]
+  ledGroups   GroupBuyGroup[]  @relation("GroupLeader")
+  groupBuyMembers GroupBuyMember[]
+  ownedProducts Product[] @relation("OwnedProducts")
 
   @@map("users")
 }
@@ -107,10 +111,15 @@ model Product {
   images      String[]
   categoryId  String
   category    Category      @relation(fields: [categoryId], references: [id])
+  ownerId     String?
+  owner       User?         @relation("OwnedProducts", fields: [ownerId], references: [id])
   status      ProductStatus @default(DRAFT)
+  salesCount  Int           @default(0)
+  warehouse   String?
   skus        Sku[]
   favorites   Favorite[]
   reviews     Review[]
+  groupBuyActivities GroupBuyActivity[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -125,6 +134,7 @@ model Sku {
   stock     Int        @default(0)
   costPrice Decimal    @db.Decimal(10, 2)
   prices    SkuPrice[]
+  groupBuyActivities GroupBuyActivity[]
   createdAt DateTime   @default(now())
 
   @@map("skus")
@@ -158,6 +168,7 @@ model Order {
   settlements     Settlement[]
   reviews         Review[]
   refunds         Refund[]
+  groupBuyMember  GroupBuyMember?
   remark          String?
   addressName     String?
   addressPhone    String?
@@ -348,4 +359,59 @@ model Refund {
   updatedAt DateTime     @updatedAt
 
   @@map("refunds")
+}
+
+enum GroupBuyStatus {
+  PENDING
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+model GroupBuyActivity {
+  id         String   @id @default(uuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  skuId      String
+  sku        Sku      @relation(fields: [skuId], references: [id])
+  groupPrice Decimal  @db.Decimal(10, 2)
+  groupSize  Int      @default(2)
+  duration   Int      @default(24)
+  maxGroups  Int      @default(0)
+  status     String   @default("ACTIVE")
+  startTime  DateTime
+  endTime    DateTime
+  createdAt  DateTime @default(now())
+  groups     GroupBuyGroup[]
+
+  @@map("group_buy_activities")
+}
+
+model GroupBuyGroup {
+  id         String         @id @default(uuid())
+  activityId String
+  activity   GroupBuyActivity @relation(fields: [activityId], references: [id])
+  leaderId   String
+  leader     User           @relation("GroupLeader", fields: [leaderId], references: [id])
+  status     GroupBuyStatus @default(PENDING)
+  expireAt   DateTime
+  createdAt  DateTime       @default(now())
+  updatedAt  DateTime       @updatedAt
+  members    GroupBuyMember[]
+
+  @@map("group_buy_groups")
+}
+
+model GroupBuyMember {
+  id       String        @id @default(uuid())
+  groupId  String
+  group    GroupBuyGroup @relation(fields: [groupId], references: [id])
+  userId   String
+  user     User          @relation(fields: [userId], references: [id])
+  orderId  String        @unique
+  order    Order         @relation(fields: [orderId], references: [id])
+  joinedAt DateTime      @default(now())
+
+  @@unique([groupId, userId])
+  @@map("group_buy_members")
 }

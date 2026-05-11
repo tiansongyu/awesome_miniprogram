@@ -13,6 +13,7 @@ export async function request<T = any>(options: {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
   data?: any;
   header?: Record<string, string>;
+  raw?: boolean;
 }): Promise<T> {
   const token = Taro.getStorageSync('token');
   const header: Record<string, string> = {
@@ -42,6 +43,10 @@ export async function request<T = any>(options: {
     const msg = res.data?.message || '请求失败';
     Taro.showToast({ title: msg, icon: 'none' });
     throw new Error(msg);
+  }
+
+  if (options.raw) {
+    return res.data as unknown as T;
   }
 
   if (res.data && typeof res.data === 'object' && 'code' in res.data) {
