@@ -5,12 +5,6 @@ import { request, BASE_URL } from '../../utils/request';
 import { useAuthStore } from '../../store/auth';
 import './index.scss';
 
-interface Category {
-  id: string;
-  name: string;
-  children?: Category[];
-}
-
 interface PriceItem {
   priceType: string;
   price: number;
@@ -62,7 +56,6 @@ function getLowestPrice(skus: Sku[]): number {
 
 export default function Index() {
   const [keyword, setKeyword] = useState('');
-  const [categories, setCategories] = useState<Category[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [groupActivities, setGroupActivities] = useState<GroupBuyActivity[]>([]);
   const [communityPosts, setCommunityPosts] = useState<CommunityPost[]>([]);
@@ -70,18 +63,10 @@ export default function Index() {
   const token = useAuthStore((s) => s.token);
 
   useDidShow(() => {
-    loadCategories();
     loadProducts();
     loadGroupActivities();
     loadCommunityPosts();
   });
-
-  async function loadCategories() {
-    try {
-      const data = await request<Category[]>({ url: '/categories' });
-      setCategories(data.slice(0, 8));
-    } catch (_) {}
-  }
 
   async function loadProducts() {
     setLoading(true);
@@ -119,10 +104,6 @@ export default function Index() {
     Taro.navigateTo({ url: `/pages/search/index?keyword=${encodeURIComponent(keyword.trim())}` });
   }
 
-  function goToCategory(categoryId: string) {
-    Taro.switchTab({ url: '/pages/category/index' });
-  }
-
   function goToProduct(id: string) {
     Taro.navigateTo({ url: `/pages/product-detail/index?id=${id}` });
   }
@@ -157,26 +138,6 @@ export default function Index() {
           </View>
         </View>
 
-        {/* Category quick links */}
-        {categories.length > 0 && (
-          <View className="section">
-            <View className="section-title">
-              <Text>商品分类</Text>
-            </View>
-            <ScrollView scrollX className="category-scroll">
-              <View className="category-list">
-                {categories.map((cat) => (
-                  <View key={cat.id} className="category-item" onClick={() => goToCategory(cat.id)}>
-                    <View className="category-icon">
-                      <Text className="category-icon-text">{cat.name.charAt(0)}</Text>
-                    </View>
-                    <Text className="category-name">{cat.name}</Text>
-                  </View>
-                ))}
-              </View>
-            </ScrollView>
-          </View>
-        )}
 
         {/* Group buy section */}
         {groupActivities.length > 0 && (
