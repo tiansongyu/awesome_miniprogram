@@ -35,8 +35,9 @@ export class AgentController {
     @CurrentUser() user: User,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
     @Query('pageSize', new DefaultValuePipe(20), ParseIntPipe) pageSize: number,
+    @Query('role') role?: string,
   ) {
-    return this.agentService.getSubAgents(user, page, pageSize);
+    return this.agentService.getSubAgents(user, page, pageSize, role);
   }
 
   @Get('tree')

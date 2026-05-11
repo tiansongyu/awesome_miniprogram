@@ -72,4 +72,15 @@ export class OrderController {
   updateStatus(@Param('id') id: string, @Body('status') status: OrderStatus) {
     return this.orderService.updateStatus(id, status);
   }
+
+  @Put(':id/ship')
+  @UseGuards(RolesGuard)
+  @Roles(Role.SUPER_ADMIN, Role.AGENT_L1)
+  ship(
+    @Param('id') id: string,
+    @Body('expressCompany') expressCompany: string,
+    @Body('expressNo') expressNo: string,
+  ) {
+    return this.orderService.ship(id, expressCompany, expressNo);
+  }
 }

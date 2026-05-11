@@ -8,3 +8,12 @@ export class AdminLoginDto {
   @MinLength(6)
   password: string;
 }
+
+export class LoginDto {
+  @IsString()
+  phone: string;
+
+  @IsString()
+  @MinLength(6)
+  password: string;
+}

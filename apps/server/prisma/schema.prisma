@@ -45,6 +45,13 @@ enum PriceType {
   RETAIL
 }
 
+enum MessageType {
+  SYSTEM
+  ORDER
+  PROMOTION
+  SETTLEMENT
+}
+
 model User {
   id            String       @id @default(uuid())
   openId        String?      @unique
@@ -63,8 +70,17 @@ model User {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
+  points      Int          @default(0)
   orders      Order[]
   settlements Settlement[]
+  addresses   Address[]
+  coupons     UserCoupon[]
+  signIns     SignIn[]
+  pointsLogs  PointsLog[]  @relation("PointsLogs")
+  favorites   Favorite[]
+  reviews     Review[]
+  messages    Message[]
+  refunds     Refund[]
 
   @@map("users")
 }
@@ -72,6 +88,7 @@ model User {
 model Category {
   id        String     @id @default(uuid())
   name      String
+  image     String?
   parentId  String?
   parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
   children  Category[] @relation("CategoryTree")
@@ -86,11 +103,14 @@ model Product {
   id          String        @id @default(uuid())
   name        String
   description String?
+  detail      String?
   images      String[]
   categoryId  String
   category    Category      @relation(fields: [categoryId], references: [id])
   status      ProductStatus @default(DRAFT)
   skus        Sku[]
+  favorites   Favorite[]
+  reviews     Review[]
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -122,18 +142,28 @@ model SkuPrice {
 }
 
 model Order {
-  id          String      @id @default(uuid())
-  orderNo     String      @unique
-  userId      String
-  user        User        @relation(fields: [userId], references: [id])
-  agentId     String?
-  totalAmount Decimal     @db.Decimal(10, 2)
-  status      OrderStatus @default(PENDING)
-  items       OrderItem[]
-  settlements Settlement[]
-  remark      String?
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
+  id              String      @id @default(uuid())
+  orderNo         String      @unique
+  userId          String
+  user            User        @relation(fields: [userId], references: [id])
+  agentId         String?
+  totalAmount     Decimal     @db.Decimal(10, 2)
+  discountAmount  Decimal     @db.Decimal(10, 2) @default(0)
+  payAmount       Decimal     @db.Decimal(10, 2) @default(0)
+  couponId        String?
+  status          OrderStatus @default(PENDING)
+  expressCompany  String?
+  expressNo       String?
+  items           OrderItem[]
+  settlements     Settlement[]
+  reviews         Review[]
+  refunds         Refund[]
+  remark          String?
+  addressName     String?
+  addressPhone    String?
+  addressDetail   String?
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
 
   @@map("orders")
 }
@@ -163,4 +193,159 @@ model Settlement {
   createdAt   DateTime @default(now())
 
   @@map("settlements")
+}
+
+model Address {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  name      String
+  phone     String
+  province  String
+  city      String
+  district  String
+  detail    String
+  isDefault Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("addresses")
+}
+
+enum CouponType {
+  FIXED
+  PERCENT
+}
+
+enum CouponStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+}
+
+enum UserCouponStatus {
+  UNUSED
+  USED
+  EXPIRED
+}
+
+model Coupon {
+  id          String       @id @default(uuid())
+  name        String
+  type        CouponType
+  value       Decimal      @db.Decimal(10, 2)
+  minAmount   Decimal      @db.Decimal(10, 2) @default(0)
+  totalCount  Int
+  usedCount   Int          @default(0)
+  startTime   DateTime
+  endTime     DateTime
+  status      CouponStatus @default(ACTIVE)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  userCoupons UserCoupon[]
+
+  @@map("coupons")
+}
+
+model UserCoupon {
+  id        String           @id @default(uuid())
+  userId    String
+  user      User             @relation(fields: [userId], references: [id])
+  couponId  String
+  coupon    Coupon           @relation(fields: [couponId], references: [id])
+  status    UserCouponStatus @default(UNUSED)
+  usedAt    DateTime?
+  orderId   String?
+  createdAt DateTime         @default(now())
+
+  @@map("user_coupons")
+}
+
+model SignIn {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  date      DateTime @db.Date
+  points    Int      @default(10)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, date])
+  @@map("sign_ins")
+}
+
+model PointsLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation("PointsLogs", fields: [userId], references: [id])
+  points    Int
+  type      String
+  remark    String?
+  createdAt DateTime @default(now())
+
+  @@map("points_logs")
+}
+
+model Favorite {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+  @@map("favorites")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  rating    Int
+  content   String?
+  images    String[]
+  createdAt DateTime @default(now())
+
+  @@unique([userId, orderId, productId])
+  @@map("reviews")
+}
+
+model Message {
+  id        String      @id @default(uuid())
+  userId    String
+  user      User        @relation(fields: [userId], references: [id])
+  title     String
+  content   String
+  type      MessageType @default(SYSTEM)
+  isRead    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  @@map("messages")
+}
+
+enum RefundStatus {
+  PENDING   // 待审核
+  APPROVED  // 已同意
+  REJECTED  // 已拒绝
+  COMPLETED // 已退款
+}
+
+model Refund {
+  id        String       @id @default(uuid())
+  orderId   String
+  order     Order        @relation(fields: [orderId], references: [id])
+  userId    String
+  user      User         @relation(fields: [userId], references: [id])
+  reason    String
+  amount    Decimal      @db.Decimal(10, 2)
+  status    RefundStatus @default(PENDING)
+  remark    String?
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@map("refunds")
 }

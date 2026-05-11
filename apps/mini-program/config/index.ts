@@ -3,7 +3,12 @@ import { defineConfig } from '@tarojs/cli';
 export default defineConfig({
   projectName: 'agent-saler-mini',
   date: '2026-05-10',
-  designWidth: 750,
+  designWidth(input) {
+    if (input?.file?.replace(/\\+/g, '/').indexOf('@nutui') > -1) {
+      return 375;
+    }
+    return 750;
+  },
   deviceRatio: {
     640: 2.34 / 2,
     750: 1,

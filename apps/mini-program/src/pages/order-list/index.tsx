@@ -1,4 +1,4 @@
-import { View, Text } from '@tarojs/components';
+import { View, Text, Image } from '@tarojs/components';
 import Taro, { useDidShow, usePullDownRefresh } from '@tarojs/taro';
 import { useState, useCallback } from 'react';
 import { request } from '../../utils/request';
@@ -10,14 +10,15 @@ const STATUS_TABS = [
   { key: 'PAID', label: '已支付' },
   { key: 'SHIPPED', label: '已发货' },
   { key: 'COMPLETED', label: '已完成' },
+  { key: 'CANCELLED', label: '已取消' },
 ];
 
-const STATUS_MAP: Record<string, { label: string; color: string }> = {
-  PENDING:   { label: '待支付', color: '#ff9500' },
-  PAID:      { label: '已支付', color: '#007aff' },
-  SHIPPED:   { label: '已发货', color: '#00bcd4' },
-  COMPLETED: { label: '已完成', color: '#4caf50' },
-  CANCELLED: { label: '已取消', color: '#999999' },
+const STATUS_MAP: Record<string, { label: string; color: string; bgColor: string }> = {
+  PENDING:   { label: '待支付', color: '#ff9500', bgColor: '#fff8ec' },
+  PAID:      { label: '已支付', color: '#007aff', bgColor: '#ecf5ff' },
+  SHIPPED:   { label: '已发货', color: '#00bcd4', bgColor: '#ecfcff' },
+  COMPLETED: { label: '已完成', color: '#4caf50', bgColor: '#edfbee' },
+  CANCELLED: { label: '已取消', color: '#999999', bgColor: '#f5f5f5' },
 };
 
 interface OrderItem {
@@ -105,7 +106,50 @@ export default function OrderList() {
     Taro.navigateTo({ url: `/pages/order-detail/index?id=${id}` });
   };
 
-  const statusInfo = (status: string) => STATUS_MAP[status] || { label: status, color: '#999' };
+  const statusInfo = (status: string) => STATUS_MAP[status] || { label: status, color: '#999', bgColor: '#f5f5f5' };
+
+  const handleCancelOrder = (e: any, orderId: string) => {
+    e.stopPropagation();
+    Taro.showModal({
+      title: '提示',
+      content: '确定要取消该订单吗？',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            await request({ url: `/orders/${orderId}/cancel`, method: 'POST' });
+            Taro.showToast({ title: '已取消', icon: 'success' });
+            fetchOrders(activeTab, 1, false);
+          } catch (_) {
+            Taro.showToast({ title: '取消失败', icon: 'none' });
+          }
+        }
+      },
+    });
+  };
+
+  const handlePay = (e: any, orderId: string) => {
+    e.stopPropagation();
+    Taro.navigateTo({ url: `/pages/order-detail/index?id=${orderId}&action=pay` });
+  };
+
+  const handleConfirmReceive = (e: any, orderId: string) => {
+    e.stopPropagation();
+    Taro.showModal({
+      title: '提示',
+      content: '确认已收到商品？',
+      success: async (res) => {
+        if (res.confirm) {
+          try {
+            await request({ url: `/orders/${orderId}/confirm`, method: 'POST' });
+            Taro.showToast({ title: '已确认收货', icon: 'success' });
+            fetchOrders(activeTab, 1, false);
+          } catch (_) {
+            Taro.showToast({ title: '操作失败', icon: 'none' });
+          }
+        }
+      },
+    });
+  };
 
   return (
     <View className="order-list">
@@ -126,6 +170,7 @@ export default function OrderList() {
       <View className="order-list__body">
         {orders.length === 0 && !loading && (
           <View className="order-list__empty">
+            <View className="order-list__empty-icon">📦</View>
             <Text className="order-list__empty-text">暂无订单</Text>
           </View>
         )}
@@ -137,12 +182,17 @@ export default function OrderList() {
               {/* Header */}
               <View className="order-card__header">
                 <Text className="order-card__no">订单号：{order.orderNo}</Text>
-                <Text className="order-card__status" style={{ color: si.color }}>{si.label}</Text>
+                <View className="order-card__status-tag" style={{ backgroundColor: si.bgColor }}>
+                  <Text className="order-card__status-text" style={{ color: si.color }}>{si.label}</Text>
+                </View>
               </View>
 
               {/* Items */}
               {order.items.map((item, idx) => (
                 <View key={idx} className="order-card__item">
+                  {item.image && (
+                    <Image className="order-card__item-img" src={item.image} mode="aspectFill" />
+                  )}
                   <View className="order-card__item-info">
                     <Text className="order-card__item-name">{item.skuName}</Text>
                     {item.specs ? <Text className="order-card__item-specs">{item.specs}</Text> : null}
@@ -157,9 +207,31 @@ export default function OrderList() {
               {/* Footer */}
               <View className="order-card__footer">
                 <Text className="order-card__total">
-                  合计：<Text className="order-card__total-amount">¥{order.totalAmount.toFixed(2)}</Text>
+                  共{order.items.reduce((s, i) => s + i.quantity, 0)}件 合计：
+                  <Text className="order-card__total-amount">¥{order.totalAmount.toFixed(2)}</Text>
                 </Text>
               </View>
+
+              {/* Action buttons */}
+              {(order.status === 'PENDING' || order.status === 'SHIPPED') && (
+                <View className="order-card__actions">
+                  {order.status === 'PENDING' && (
+                    <>
+                      <View className="order-card__btn order-card__btn--default" onClick={(e) => handleCancelOrder(e, order.id)}>
+                        <Text className="order-card__btn-text order-card__btn-text--default">取消订单</Text>
+                      </View>
+                      <View className="order-card__btn order-card__btn--primary" onClick={(e) => handlePay(e, order.id)}>
+                        <Text className="order-card__btn-text order-card__btn-text--primary">去支付</Text>
+                      </View>
+                    </>
+                  )}
+                  {order.status === 'SHIPPED' && (
+                    <View className="order-card__btn order-card__btn--primary" onClick={(e) => handleConfirmReceive(e, order.id)}>
+                      <Text className="order-card__btn-text order-card__btn-text--primary">确认收货</Text>
+                    </View>
+                  )}
+                </View>
+              )}
             </View>
           );
         })}

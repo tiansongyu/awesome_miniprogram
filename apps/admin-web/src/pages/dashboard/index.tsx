@@ -1,122 +1,124 @@
+import { useEffect, useState } from 'react';
 import { PageContainer } from '@ant-design/pro-components';
-import { Card, Table, Row, Col, Statistic, Tag } from 'antd';
+import { Card, Row, Col, Statistic, Spin, message } from 'antd';
 import {
-  ShoppingOutlined,
-  OrderedListOutlined,
-  TeamOutlined,
   UserOutlined,
+  ShoppingCartOutlined,
+  DollarOutlined,
+  ShoppingOutlined,
+  TeamOutlined,
+  AppstoreOutlined,
 } from '@ant-design/icons';
-
-const mockStats = {
-  todaySales: 12580,
-  todayOrders: 36,
-  totalAgents: 15,
-  totalMembers: 238,
-};
-
-const mockRecentOrders = [
-  { id: '1', orderNo: 'ORD20260510ABC123', totalAmount: 299, status: 'PAID', createdAt: '2026-05-10 14:30' },
-  { id: '2', orderNo: 'ORD20260510DEF456', totalAmount: 158, status: 'SHIPPED', createdAt: '2026-05-10 13:20' },
-  { id: '3', orderNo: 'ORD20260510GHI789', totalAmount: 520, status: 'COMPLETED', createdAt: '2026-05-10 11:05' },
-  { id: '4', orderNo: 'ORD20260509JKL012', totalAmount: 89, status: 'PENDING', createdAt: '2026-05-09 22:15' },
-  { id: '5', orderNo: 'ORD20260509MNO345', totalAmount: 1200, status: 'COMPLETED', createdAt: '2026-05-09 18:40' },
-];
-
-const statusMap: Record<string, { label: string; color: string }> = {
-  PENDING: { label: '待支付', color: 'orange' },
-  PAID: { label: '已支付', color: 'blue' },
-  SHIPPED: { label: '已发货', color: 'cyan' },
-  COMPLETED: { label: '已完成', color: 'green' },
-  CANCELLED: { label: '已取消', color: 'red' },
-};
-
-const orderColumns = [
-  {
-    title: '订单号',
-    dataIndex: 'orderNo',
-    key: 'orderNo',
-  },
-  {
-    title: '金额',
-    dataIndex: 'totalAmount',
-    key: 'totalAmount',
-    render: (val: number) => `¥${val.toFixed(2)}`,
-  },
-  {
-    title: '状态',
-    dataIndex: 'status',
-    key: 'status',
-    render: (val: string) => {
-      const s = statusMap[val] ?? { label: val, color: 'default' };
-      return <Tag color={s.color}>{s.label}</Tag>;
-    },
-  },
-  {
-    title: '时间',
-    dataIndex: 'createdAt',
-    key: 'createdAt',
-  },
-];
+import { getStatsOverview } from '../../api/stats';
+import type { StatsOverview } from '../../api/stats';
 
 export default function Dashboard() {
+  const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<StatsOverview | null>(null);
+
+  useEffect(() => {
+    getStatsOverview()
+      .then((data) => setStats(data))
+      .catch((err) => message.error(err.message || '获取统计数据失败'))
+      .finally(() => setLoading(false));
+  }, []);
+
+  if (loading) {
+    return (
+      <PageContainer title="数据概览">
+        <div style={{ textAlign: 'center', padding: 100 }}>
+          <Spin size="large" />
+        </div>
+      </PageContainer>
+    );
+  }
+
   return (
     <PageContainer title="数据概览">
       <Row gutter={[16, 16]}>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="今日销售额"
-              value={mockStats.todaySales}
-              precision={2}
-              prefix={<ShoppingOutlined style={{ color: '#1677ff' }} />}
+              title="总用户数"
+              value={stats?.totalUsers ?? 0}
+              prefix={<UserOutlined style={{ color: '#1677ff' }} />}
               valueStyle={{ color: '#1677ff' }}
-              suffix="元"
+              suffix="人"
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="今日订单数"
-              value={mockStats.todayOrders}
-              prefix={<OrderedListOutlined style={{ color: '#52c41a' }} />}
+              title="总订单数"
+              value={stats?.totalOrders ?? 0}
+              prefix={<ShoppingCartOutlined style={{ color: '#52c41a' }} />}
               valueStyle={{ color: '#52c41a' }}
               suffix="单"
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="代理总数"
-              value={mockStats.totalAgents}
-              prefix={<TeamOutlined style={{ color: '#faad14' }} />}
+              title="总收入"
+              value={stats?.totalRevenue ?? 0}
+              precision={2}
+              prefix={<DollarOutlined style={{ color: '#faad14' }} />}
               valueStyle={{ color: '#faad14' }}
-              suffix="人"
+              suffix="元"
             />
           </Card>
         </Col>
-        <Col span={6}>
+        <Col xs={24} sm={12} md={6}>
           <Card>
             <Statistic
-              title="会员总数"
-              value={mockStats.totalMembers}
-              prefix={<UserOutlined style={{ color: '#722ed1' }} />}
+              title="今日订单"
+              value={stats?.todayOrders ?? 0}
+              prefix={<ShoppingCartOutlined style={{ color: '#722ed1' }} />}
               valueStyle={{ color: '#722ed1' }}
-              suffix="人"
+              suffix="单"
             />
           </Card>
         </Col>
       </Row>
 
-      <Card title="最近订单" style={{ marginTop: 16 }}>
-        <Table
-          rowKey="id"
-          dataSource={mockRecentOrders}
-          columns={orderColumns}
-          pagination={false}
-        />
-      </Card>
+      <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+        <Col xs={24} sm={12} md={8}>
+          <Card>
+            <Statistic
+              title="在售商品数"
+              value={stats?.onSaleProducts ?? 0}
+              prefix={<AppstoreOutlined style={{ color: '#13c2c2' }} />}
+              valueStyle={{ color: '#13c2c2' }}
+              suffix={`/ ${stats?.totalProducts ?? 0}`}
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={8}>
+          <Card>
+            <Statistic
+              title="代理人数"
+              value={stats?.totalAgents ?? 0}
+              prefix={<TeamOutlined style={{ color: '#eb2f96' }} />}
+              valueStyle={{ color: '#eb2f96' }}
+              suffix="人"
+            />
+          </Card>
+        </Col>
+        <Col xs={24} sm={12} md={8}>
+          <Card>
+            <Statistic
+              title="今日收入"
+              value={stats?.todayRevenue ?? 0}
+              precision={2}
+              prefix={<DollarOutlined style={{ color: '#f5222d' }} />}
+              valueStyle={{ color: '#f5222d' }}
+              suffix="元"
+            />
+          </Card>
+        </Col>
+      </Row>
     </PageContainer>
   );
 }

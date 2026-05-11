@@ -1,0 +1,193 @@
+.coupons {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: 40px;
+
+  &__tabs {
+    display: flex;
+    background-color: #fff;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+  }
+
+  &__tab {
+    flex: 1;
+    text-align: center;
+    padding: 28px 0;
+    position: relative;
+
+    &--active {
+      .coupons__tab-text {
+        color: #ff6b35;
+        font-weight: bold;
+      }
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 48px;
+        height: 4px;
+        background-color: #ff6b35;
+        border-radius: 2px;
+      }
+    }
+  }
+
+  &__tab-text {
+    font-size: 28px;
+    color: #666;
+  }
+
+  &__filter {
+    display: flex;
+    padding: 20px 24px;
+    background-color: #fff;
+    margin-bottom: 16px;
+  }
+
+  &__filter-item {
+    padding: 12px 28px;
+    border-radius: 28px;
+    margin-right: 20px;
+    background-color: #f5f5f5;
+
+    &--active {
+      background-color: #fff3ed;
+
+      .coupons__filter-text {
+        color: #ff6b35;
+      }
+    }
+  }
+
+  &__filter-text {
+    font-size: 24px;
+    color: #666;
+  }
+
+  &__list {
+    padding: 20px 24px;
+  }
+
+  &__empty {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 120px 0;
+  }
+
+  &__empty-text {
+    font-size: 28px;
+    color: #999;
+  }
+
+  &__mine {
+    // wrapper for my coupons section
+  }
+}
+
+.coupon-card {
+  display: flex;
+  border-radius: 16px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+
+  &--inactive {
+    .coupon-card__left {
+      background: linear-gradient(135deg, #bbb, #999);
+    }
+
+    .coupon-card__name,
+    .coupon-card__desc,
+    .coupon-card__date {
+      color: #999;
+    }
+  }
+
+  &__left {
+    width: 200px;
+    min-height: 180px;
+    background: linear-gradient(135deg, #ff6b35, #ff4500);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 24px 16px;
+  }
+
+  &__value {
+    font-size: 44px;
+    font-weight: bold;
+    color: #fff;
+  }
+
+  &__condition {
+    font-size: 20px;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 8px;
+  }
+
+  &__right {
+    flex: 1;
+    background-color: #fff;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    position: relative;
+  }
+
+  &__name {
+    font-size: 28px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
+  }
+
+  &__desc {
+    font-size: 22px;
+    color: #999;
+    margin-bottom: 8px;
+  }
+
+  &__date {
+    font-size: 20px;
+    color: #bbb;
+  }
+
+  &__btn {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: #ff6b35;
+    border-radius: 28px;
+    padding: 12px 28px;
+  }
+
+  &__btn-text {
+    font-size: 24px;
+    color: #fff;
+    white-space: nowrap;
+  }
+
+  &__status-tag {
+    position: absolute;
+    right: 24px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 2px solid #999;
+    border-radius: 8px;
+    padding: 8px 16px;
+  }
+
+  &__status-text {
+    font-size: 22px;
+    color: #999;
+  }
+}

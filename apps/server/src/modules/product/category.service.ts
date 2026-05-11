@@ -11,6 +11,7 @@ export class CategoryService {
       data: {
         name: dto.name,
         parentId: dto.parentId || null,
+        image: dto.image || null,
         sort: dto.sort || 0,
       },
     });
@@ -21,10 +22,17 @@ export class CategoryService {
       where: { parentId: null },
       orderBy: { sort: 'asc' },
       include: {
+        _count: { select: { products: true } },
         children: {
           orderBy: { sort: 'asc' },
           include: {
-            children: { orderBy: { sort: 'asc' } },
+            _count: { select: { products: true } },
+            children: {
+              orderBy: { sort: 'asc' },
+              include: {
+                _count: { select: { products: true } },
+              },
+            },
           },
         },
       },

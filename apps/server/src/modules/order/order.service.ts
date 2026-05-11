@@ -5,7 +5,7 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { User, Role, MemberLevel, PriceType, OrderStatus } from '@prisma/client';
+import { User, Role, MemberLevel, PriceType, OrderStatus, CouponType, UserCouponStatus } from '@prisma/client';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { generateOrderNo } from '@agent-saler/utils';
 import { Decimal } from '@prisma/client/runtime/library';
@@ -73,6 +73,52 @@ export class OrderService {
       new Decimal(0),
     );
 
+    // 处理优惠券
+    let discountAmount = new Decimal(0);
+    let userCouponId: string | undefined;
+
+    if (dto.couponId) {
+      const userCoupon = await this.prisma.userCoupon.findFirst({
+        where: {
+          id: dto.couponId,
+          userId: user.id,
+          status: UserCouponStatus.UNUSED,
+        },
+        include: { coupon: true },
+      });
+
+      if (!userCoupon) {
+        throw new BadRequestException('优惠券不可用');
+      }
+
+      const coupon = userCoupon.coupon;
+      const now = new Date();
+      if (now < coupon.startTime || now > coupon.endTime) {
+        throw new BadRequestException('优惠券不在有效期内');
+      }
+
+      if (totalAmount.lessThan(new Decimal(coupon.minAmount.toString()))) {
+        throw new BadRequestException('订单金额未满足优惠券最低消费条件');
+      }
+
+      // 计算折扣金额
+      if (coupon.type === CouponType.FIXED) {
+        discountAmount = new Decimal(coupon.value.toString());
+      } else if (coupon.type === CouponType.PERCENT) {
+        // PERCENT 类型: value 为折扣，如 8.5 表示 8.5 折
+        discountAmount = totalAmount.mul(new Decimal(1).sub(new Decimal(coupon.value.toString()).div(10)));
+      }
+
+      // 折扣不能超过订单总额
+      if (discountAmount.greaterThan(totalAmount)) {
+        discountAmount = totalAmount;
+      }
+
+      userCouponId = userCoupon.id;
+    }
+
+    const payAmount = totalAmount.sub(discountAmount);
+
     const order = await this.prisma.$transaction(async (tx) => {
       for (const item of dto.items) {
         const updated = await tx.sku.updateMany({
@@ -84,13 +130,27 @@ export class OrderService {
         }
       }
 
+      // 标记优惠券为已使用
+      if (userCouponId) {
+        await tx.userCoupon.update({
+          where: { id: userCouponId },
+          data: { status: UserCouponStatus.USED, usedAt: new Date() },
+        });
+      }
+
       return tx.order.create({
         data: {
           orderNo: generateOrderNo(),
           userId: user.id,
           agentId: user.parentAgentId,
           totalAmount,
+          discountAmount,
+          payAmount,
+          couponId: userCouponId || null,
           remark: dto.remark,
+          addressName: dto.addressName,
+          addressPhone: dto.addressPhone,
+          addressDetail: dto.addressDetail,
           items: {
             create: orderItems,
           },
@@ -122,7 +182,7 @@ export class OrderService {
   async findById(orderId: string, userId?: string) {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-      include: { items: true, settlements: true },
+      include: { items: true, settlements: true, refunds: true },
     });
     if (!order) throw new NotFoundException('订单不存在');
     if (userId && order.userId !== userId) {
@@ -181,5 +241,22 @@ export class OrderService {
       this.prisma.order.count({ where }),
     ]);
     return { items, total, page, pageSize };
+  }
+
+  async ship(orderId: string, expressCompany: string, expressNo: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('订单不存在');
+    if (order.status !== OrderStatus.PAID) {
+      throw new BadRequestException('只有已支付订单可以发货');
+    }
+
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        status: OrderStatus.SHIPPED,
+        expressCompany,
+        expressNo,
+      },
+    });
   }
 }

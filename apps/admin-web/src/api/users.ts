@@ -1,13 +1,37 @@
 import client from './client';
 
-export const getUsers = (params?: Record<string, unknown>) =>
-  client.get('/users', { params });
+export interface User {
+  id: string;
+  nickname: string;
+  avatar: string;
+  phone: string;
+  role: string;
+  memberLevel: string;
+  frozen: boolean;
+  balance: number;
+  createdAt: string;
+}
 
-export const getMembers = (params?: { page?: number; pageSize?: number }) =>
-  client.get('/users/customers', { params });
+export async function getUsers(params: { page?: number; pageSize?: number; role?: string }) {
+  return client.get('/users', { params });
+}
 
-export const getUser = (id: number) =>
-  client.get(`/users/${id}`);
+export async function getUserDetail(id: string) {
+  return client.get(`/users/${id}`);
+}
 
-export const updateUser = (id: number, data: Record<string, unknown>) =>
-  client.put(`/users/${id}`, data);
+export async function updateUserRole(id: string, role: string) {
+  return client.put(`/users/${id}/role`, { role });
+}
+
+export async function updateMemberLevel(id: string, memberLevel: string) {
+  return client.put(`/users/${id}/member-level`, { memberLevel });
+}
+
+export async function freezeUser(id: string) {
+  return client.put(`/users/${id}/freeze`);
+}
+
+export async function unfreezeUser(id: string) {
+  return client.put(`/users/${id}/unfreeze`);
+}

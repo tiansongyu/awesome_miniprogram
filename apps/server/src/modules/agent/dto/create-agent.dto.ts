@@ -23,4 +23,8 @@ export class UpdateAgentDto {
 
   @IsOptional()
   frozen?: boolean;
+
+  @IsOptional()
+  @IsEnum(Role)
+  role?: Role;
 }

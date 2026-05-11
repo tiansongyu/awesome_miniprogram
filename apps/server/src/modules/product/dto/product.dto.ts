@@ -17,6 +17,10 @@ export class CreateProductDto {
   @IsString()
   description?: string;
 
+  @IsOptional()
+  @IsString()
+  detail?: string;
+
   @IsArray()
   @IsString({ each: true })
   images: string[];
@@ -42,6 +46,10 @@ export class UpdateProductDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @IsString()
+  detail?: string;
 
   @IsOptional()
   @IsArray()

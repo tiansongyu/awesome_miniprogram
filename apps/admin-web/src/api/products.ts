@@ -3,9 +3,11 @@ import client from './client';
 export interface Category {
   id: string;
   name: string;
+  image?: string;
   parentId?: string;
   sort?: number;
   children?: Category[];
+  _count?: { products: number };
 }
 
 export interface SkuPrice {
@@ -53,12 +55,12 @@ export async function getCategories(): Promise<Category[]> {
   return res as unknown as Category[];
 }
 
-export async function createCategory(data: { name: string; parentId?: string; sort?: number }): Promise<Category> {
+export async function createCategory(data: { name: string; parentId?: string; sort?: number; image?: string }): Promise<Category> {
   const res = await client.post('/categories', data);
   return res as unknown as Category;
 }
 
-export async function updateCategory(id: string, data: { name?: string; sort?: number }): Promise<Category> {
+export async function updateCategory(id: string, data: { name?: string; sort?: number; image?: string }): Promise<Category> {
   const res = await client.put(`/categories/${id}`, data);
   return res as unknown as Category;
 }

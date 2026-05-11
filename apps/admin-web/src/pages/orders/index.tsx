@@ -1,9 +1,9 @@
 import { useRef, useState } from 'react';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
-import { Tag, Button, Drawer, Descriptions, Table, message, Space, Tabs } from 'antd';
+import { Tag, Button, Drawer, Descriptions, Table, message, Space, Tabs, Modal, Form, Input } from 'antd';
 import dayjs from 'dayjs';
-import { getOrders, getOrderDetail, updateOrderStatus } from '../../api/orders';
+import { getOrders, getOrderDetail, updateOrderStatus, shipOrder } from '../../api/orders';
 
 interface OrderItem {
   id: string;
@@ -20,10 +20,17 @@ interface Settlement {
   agentLevel: string;
 }
 
+interface OrderUser {
+  id: string;
+  nickname: string;
+  phone: string;
+}
+
 interface Order {
   id: string;
   orderNo: string;
   userId: string;
+  user?: OrderUser;
   totalAmount: number;
   status: 'PENDING' | 'PAID' | 'SHIPPED' | 'COMPLETED' | 'CANCELLED';
   createdAt: string;
@@ -54,6 +61,10 @@ export default function Orders() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [detail, setDetail] = useState<Order | null>(null);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [shipModalOpen, setShipModalOpen] = useState(false);
+  const [shipOrderId, setShipOrderId] = useState<string>('');
+  const [shipLoading, setShipLoading] = useState(false);
+  const [shipForm] = Form.useForm();
 
   const openDetail = async (record: Order) => {
     setDrawerOpen(true);
@@ -81,6 +92,27 @@ export default function Orders() {
     }
   };
 
+  const openShipModal = (record: Order) => {
+    setShipOrderId(record.id);
+    shipForm.resetFields();
+    setShipModalOpen(true);
+  };
+
+  const handleShip = async () => {
+    try {
+      const values = await shipForm.validateFields();
+      setShipLoading(true);
+      await shipOrder(shipOrderId, values.expressCompany, values.expressNo);
+      message.success('发货成功');
+      setShipModalOpen(false);
+      actionRef.current?.reload();
+    } catch {
+      message.error('发货失败');
+    } finally {
+      setShipLoading(false);
+    }
+  };
+
   const columns: ProColumns<Order>[] = [
     {
       title: '订单号',
@@ -89,12 +121,23 @@ export default function Orders() {
       width: 200,
     },
     {
-      title: '下单用户',
-      dataIndex: 'userId',
+      title: '用户昵称',
+      dataIndex: ['user', 'nickname'],
       width: 120,
+      render: (_, record) => record.user?.nickname || record.userId,
     },
     {
-      title: '订单金额',
+      title: '商品信息',
+      dataIndex: 'items',
+      width: 200,
+      ellipsis: true,
+      render: (_, record) => {
+        if (!record.items || record.items.length === 0) return '-';
+        return record.items.map((item) => `${item.skuName}x${item.quantity}`).join(', ');
+      },
+    },
+    {
+      title: '总金额',
       dataIndex: 'totalAmount',
       width: 120,
       render: (_, record) => `¥${Number(record.totalAmount).toFixed(2)}`,
@@ -123,11 +166,21 @@ export default function Orders() {
           <Button type="link" size="small" onClick={() => openDetail(record)}>
             查看详情
           </Button>
+          {record.status === 'PENDING' && (
+            <Button
+              type="link"
+              size="small"
+              danger
+              onClick={() => handleUpdateStatus(record, 'CANCELLED')}
+            >
+              取消
+            </Button>
+          )}
           {record.status === 'PAID' && (
             <Button
               type="link"
               size="small"
-              onClick={() => handleUpdateStatus(record, 'SHIPPED')}
+              onClick={() => openShipModal(record)}
             >
               发货
             </Button>
@@ -259,6 +312,33 @@ export default function Orders() {
           </>
         )}
       </Drawer>
+
+      <Modal
+        title="填写物流信息"
+        open={shipModalOpen}
+        onOk={handleShip}
+        onCancel={() => setShipModalOpen(false)}
+        confirmLoading={shipLoading}
+        okText="确认发货"
+        cancelText="取消"
+      >
+        <Form form={shipForm} layout="vertical">
+          <Form.Item
+            name="expressCompany"
+            label="快递公司"
+            rules={[{ required: true, message: '请输入快递公司' }]}
+          >
+            <Input placeholder="如：顺丰速运、中通快递" />
+          </Form.Item>
+          <Form.Item
+            name="expressNo"
+            label="快递单号"
+            rules={[{ required: true, message: '请输入快递单号' }]}
+          >
+            <Input placeholder="请输入快递单号" />
+          </Form.Item>
+        </Form>
+      </Modal>
     </PageContainer>
   );
 }

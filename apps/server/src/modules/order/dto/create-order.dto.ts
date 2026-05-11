@@ -19,4 +19,20 @@ export class CreateOrderDto {
   @IsOptional()
   @IsString()
   remark?: string;
+
+  @IsOptional()
+  @IsString()
+  addressName?: string;
+
+  @IsOptional()
+  @IsString()
+  addressPhone?: string;
+
+  @IsOptional()
+  @IsString()
+  addressDetail?: string;
+
+  @IsOptional()
+  @IsString()
+  couponId?: string;
 }

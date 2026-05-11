@@ -8,6 +8,12 @@ export default defineAppConfig({
     'pages/order-list/index',
     'pages/order-detail/index',
     'pages/agent-center/index',
+    'pages/address/index',
+    'pages/coupons/index',
+    'pages/favorites/index',
+    'pages/review/index',
+    'pages/refund/index',
+    'pages/messages/index',
   ],
   tabBar: {
     color: '#999999',

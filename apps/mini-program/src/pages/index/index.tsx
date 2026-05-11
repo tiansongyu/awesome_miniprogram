@@ -1,7 +1,8 @@
-import { View, Text, Image, ScrollView, Input } from '@tarojs/components';
+import { View, Text, Image, ScrollView } from '@tarojs/components';
+import { SearchBar } from '@nutui/nutui-react-taro';
 import Taro, { useDidShow } from '@tarojs/taro';
 import { useState } from 'react';
-import { request } from '../../utils/request';
+import { request, BASE_URL } from '../../utils/request';
 import './index.scss';
 
 interface Category {
@@ -89,24 +90,25 @@ export default function Index() {
     <View className="index-page">
       {/* Search bar */}
       <View className="search-bar">
-        <View className="search-inner">
-          <Text className="search-icon">🔍</Text>
-          <Input
-            className="search-input"
-            placeholder="搜索商品"
-            value={keyword}
-            onInput={(e) => setKeyword(e.detail.value)}
-            onConfirm={handleSearch}
-            confirmType="search"
-          />
-        </View>
+        <SearchBar
+          placeholder="搜索商品"
+          value={keyword}
+          onChange={(val) => setKeyword(val)}
+          onSearch={handleSearch}
+          shape="round"
+          className="search-bar-input"
+        />
       </View>
 
       <ScrollView scrollY className="page-scroll">
         {/* Banner */}
         <View className="banner">
           <View className="banner-placeholder">
-            <Text className="banner-text">精选好货 · 品质生活</Text>
+            <View className="banner-content">
+              <Text className="banner-title">精选好货</Text>
+              <Text className="banner-subtitle">品质生活 · 每日上新</Text>
+            </View>
+            <View className="banner-decoration"></View>
           </View>
         </View>
 
@@ -145,10 +147,11 @@ export default function Index() {
               {products.map((product) => {
                 const price = getLowestPrice(product.skus);
                 const image = product.images?.[0] || '';
+                const imageSrc = image.startsWith('http') ? image : `${BASE_URL}${image}`;
                 return (
                   <View key={product.id} className="product-card" onClick={() => goToProduct(product.id)}>
                     {image ? (
-                      <Image className="product-image" src={image} mode="aspectFill" />
+                      <Image className="product-image" src={imageSrc} mode="aspectFill" />
                     ) : (
                       <View className="product-image-placeholder" />
                     )}

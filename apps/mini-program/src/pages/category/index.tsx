@@ -1,7 +1,7 @@
 import { View, Text, Image, ScrollView } from '@tarojs/components';
 import Taro, { useDidShow } from '@tarojs/taro';
 import { useState, useEffect } from 'react';
-import { request } from '../../utils/request';
+import { request, BASE_URL } from '../../utils/request';
 import './index.scss';
 
 interface Category {
@@ -58,13 +58,24 @@ export default function CategoryPage() {
     const kw = params.keyword ? decodeURIComponent(params.keyword as string) : '';
     const catId = (params.categoryId as string) || '';
     setKeyword(kw);
-    loadCategories(catId);
+    if (kw) {
+      // When searching by keyword, don't pre-select a category
+      setSelectedParentId('');
+      setSelectedChildId('');
+      loadCategories('', true);
+    } else {
+      loadCategories(catId, false);
+    }
   });
 
-  async function loadCategories(initialCatId?: string) {
+  async function loadCategories(initialCatId?: string, skipAutoSelect?: boolean) {
     try {
       const data = await request<Category[]>({ url: '/categories' });
       setCategories(data);
+      if (skipAutoSelect) {
+        // Don't auto-select any category (keyword search mode)
+        return;
+      }
       if (initialCatId) {
         const parent = data.find((c) => c.id === initialCatId);
         if (parent) {
@@ -199,7 +210,10 @@ export default function CategoryPage() {
         >
           {keyword ? (
             <View className="keyword-tip">
-              <Text>搜索: {keyword}</Text>
+              <Text className="keyword-label">搜索: {keyword}</Text>
+              <View className="keyword-close" onClick={() => { setKeyword(''); }}>
+                <Text>✕</Text>
+              </View>
             </View>
           ) : null}
 
@@ -207,10 +221,11 @@ export default function CategoryPage() {
             {products.map((product) => {
               const price = getLowestPrice(product.skus);
               const image = product.images?.[0] || '';
+              const imageSrc = image.startsWith('http') ? image : `${BASE_URL}${image}`;
               return (
                 <View key={product.id} className="product-card" onClick={() => goToProduct(product.id)}>
                   {image ? (
-                    <Image className="product-image" src={image} mode="aspectFill" />
+                    <Image className="product-image" src={imageSrc} mode="aspectFill" />
                   ) : (
                     <View className="product-image-placeholder" />
                   )}

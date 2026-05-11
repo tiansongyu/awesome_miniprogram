@@ -9,19 +9,35 @@
     position: sticky;
     top: 0;
     z-index: 10;
+    overflow-x: auto;
+    white-space: nowrap;
   }
 
   &__tab {
     flex: 1;
+    min-width: 0;
     text-align: center;
-    padding: 24px 0;
-    font-size: 28px;
+    padding: 24px 12px;
+    font-size: 26px;
     color: #666;
+    position: relative;
+    transition: color 0.2s;
 
     &--active {
       color: #ff6b35;
-      border-bottom: 4px solid #ff6b35;
       font-weight: 600;
+
+      &::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 40px;
+        height: 4px;
+        background: #ff6b35;
+        border-radius: 2px;
+      }
     }
   }
 
@@ -31,9 +47,15 @@
 
   &__empty {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 120px 0;
+    padding: 160px 0;
+  }
+
+  &__empty-icon {
+    font-size: 80px;
+    margin-bottom: 24px;
   }
 
   &__empty-text {
@@ -60,36 +82,71 @@
   border-radius: 16px;
   margin-bottom: 20px;
   padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
 
   &__header {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #f5f5f5;
   }
 
   &__no {
     font-size: 24px;
-    color: #666;
+    color: #999;
   }
 
-  &__status {
-    font-size: 26px;
+  &__status-tag {
+    padding: 6px 16px;
+    border-radius: 20px;
+  }
+
+  &__status-text {
+    font-size: 22px;
     font-weight: 600;
   }
 
   &__item {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     padding: 16px 0;
-    border-top: 1px solid #f0f0f0;
+
+    & + & {
+      border-top: 1px solid #f8f8f8;
+    }
+  }
+
+  &__item-image {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    margin-right: 20px;
+    background: #f5f5f5;
+    flex-shrink: 0;
+  }
+
+  &__item-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 12px;
+    margin-right: 20px;
+    background: #f5f5f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  &__item-placeholder-text {
+    font-size: 40px;
   }
 
   &__item-info {
     flex: 1;
     margin-right: 20px;
+    overflow: hidden;
   }
 
   &__item-name {
@@ -97,22 +154,28 @@
     color: #333;
     display: block;
     margin-bottom: 8px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__item-specs {
     font-size: 24px;
     color: #999;
+    display: block;
   }
 
   &__item-right {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    flex-shrink: 0;
   }
 
   &__item-price {
     font-size: 28px;
     color: #333;
+    font-weight: 500;
     margin-bottom: 8px;
   }
 
@@ -124,9 +187,10 @@
   &__footer {
     display: flex;
     justify-content: flex-end;
-    margin-top: 20px;
+    align-items: center;
+    margin-top: 16px;
     padding-top: 16px;
-    border-top: 1px solid #f0f0f0;
+    border-top: 1px solid #f5f5f5;
   }
 
   &__total {
@@ -135,8 +199,50 @@
   }
 
   &__total-amount {
-    font-size: 30px;
+    font-size: 32px;
     font-weight: 700;
     color: #ff6b35;
+  }
+
+  &__actions {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid #f5f5f5;
+    gap: 16px;
+  }
+
+  &__btn {
+    padding: 12px 28px;
+    border-radius: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &--default {
+      background: #fff;
+      border: 1px solid #ddd;
+    }
+
+    &--primary {
+      background: linear-gradient(135deg, #ff6b35, #ff8f1f);
+      border: none;
+      box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3);
+    }
+  }
+
+  &__btn-text {
+    font-size: 24px;
+
+    &--default {
+      color: #666;
+    }
+
+    &--primary {
+      color: #fff;
+      font-weight: 500;
+    }
   }
 }

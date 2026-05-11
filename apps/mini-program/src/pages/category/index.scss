@@ -7,18 +7,31 @@
   .sidebar {
     width: 200rpx;
     height: 100%;
-    background: #fff;
+    background: #fafafa;
     flex-shrink: 0;
+    box-shadow: 2rpx 0 8rpx rgba(0, 0, 0, 0.03);
 
     .sidebar-item {
-      padding: 32rpx 16rpx;
+      padding: 36rpx 16rpx;
       text-align: center;
       border-left: 6rpx solid transparent;
-      transition: all 0.2s;
+      transition: all 0.25s ease;
+      position: relative;
 
       &.active {
         border-left-color: #ff6b35;
-        background: #fff5f0;
+        background: #fff;
+
+        &::before {
+          content: '';
+          position: absolute;
+          left: 0;
+          top: 20%;
+          bottom: 20%;
+          width: 6rpx;
+          background: linear-gradient(180deg, #ff9a56, #ff6b35);
+          border-radius: 0 3rpx 3rpx 0;
+        }
 
         .sidebar-text {
           color: #ff6b35;
@@ -28,7 +41,7 @@
 
       .sidebar-text {
         font-size: 26rpx;
-        color: #555;
+        color: #666;
         line-height: 1.4;
       }
     }
@@ -45,26 +58,30 @@
       flex-shrink: 0;
       background: #fff;
       white-space: nowrap;
-      border-bottom: 1rpx solid #eee;
+      border-bottom: none;
+      box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
 
       .sub-category-list {
         display: inline-flex;
-        padding: 16rpx 12rpx;
+        padding: 20rpx 16rpx;
         gap: 16rpx;
 
         .sub-category-item {
           display: inline-flex;
           align-items: center;
-          padding: 10rpx 24rpx;
-          border-radius: 28rpx;
+          padding: 12rpx 28rpx;
+          border-radius: 32rpx;
           background: #f5f5f5;
           flex-shrink: 0;
+          transition: all 0.2s ease;
 
           &.active {
-            background: #ff6b35;
+            background: linear-gradient(135deg, #ff9a56 0%, #ff6b35 100%);
+            box-shadow: 0 4rpx 12rpx rgba(255, 107, 53, 0.25);
 
             .sub-category-text {
               color: #fff;
+              font-weight: bold;
             }
           }
 
@@ -82,10 +99,37 @@
       overflow: hidden;
 
       .keyword-tip {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
         padding: 16rpx 24rpx;
-        background: #fff5f0;
-        font-size: 24rpx;
-        color: #ff6b35;
+        margin: 16rpx 16rpx 0;
+        background: #fff;
+        border-radius: 12rpx;
+        box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+
+        .keyword-label {
+          font-size: 24rpx;
+          color: #ff6b35;
+          flex: 1;
+        }
+
+        .keyword-close {
+          width: 36rpx;
+          height: 36rpx;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          border-radius: 50%;
+          background: #f0f0f0;
+          margin-left: 16rpx;
+
+          text {
+            font-size: 20rpx;
+            color: #999;
+            line-height: 1;
+          }
+        }
       }
 
       .product-grid {
@@ -97,9 +141,10 @@
         .product-card {
           width: calc(50% - 8rpx);
           background: #fff;
-          border-radius: 12rpx;
+          border-radius: 16rpx;
           overflow: hidden;
-          box-shadow: 0 2rpx 10rpx rgba(0, 0, 0, 0.06);
+          box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.06);
+          transition: box-shadow 0.2s;
 
           .product-image {
             width: 100%;
@@ -110,27 +155,28 @@
           .product-image-placeholder {
             width: 100%;
             height: 260rpx;
-            background: #f0f0f0;
+            background: linear-gradient(135deg, #f5f5f5 0%, #eee 100%);
           }
 
           .product-info {
-            padding: 12rpx;
+            padding: 16rpx;
 
             .product-name {
-              font-size: 24rpx;
+              font-size: 26rpx;
               color: #333;
               display: -webkit-box;
               -webkit-line-clamp: 2;
               -webkit-box-orient: vertical;
               overflow: hidden;
               line-height: 1.4;
-              margin-bottom: 8rpx;
+              margin-bottom: 12rpx;
+              font-weight: 500;
             }
 
             .product-price {
-              font-size: 28rpx;
-              color: #ff6b35;
-              font-weight: bold;
+              font-size: 32rpx;
+              color: #ff4d2a;
+              font-weight: 800;
             }
           }
         }
@@ -140,9 +186,9 @@
       .end-tip,
       .empty-tip {
         text-align: center;
-        padding: 32rpx;
+        padding: 40rpx;
         font-size: 24rpx;
-        color: #999;
+        color: #bbb;
       }
     }
   }

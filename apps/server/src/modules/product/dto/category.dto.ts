@@ -9,6 +9,10 @@ export class CreateCategoryDto {
   parentId?: string;
 
   @IsOptional()
+  @IsString()
+  image?: string;
+
+  @IsOptional()
   @IsInt()
   @Min(0)
   sort?: number;
@@ -18,6 +22,10 @@ export class UpdateCategoryDto {
   @IsOptional()
   @IsString()
   name?: string;
+
+  @IsOptional()
+  @IsString()
+  image?: string;
 
   @IsOptional()
   @IsInt()

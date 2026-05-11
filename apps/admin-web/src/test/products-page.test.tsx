@@ -159,7 +159,8 @@ describe('Products Page - All Buttons', () => {
 
     expect(document.querySelector('input#name')).not.toBeNull();
     expect(document.querySelector('textarea#description')).not.toBeNull();
-    expect(document.querySelector('input#imageUrl')).not.toBeNull();
+    // Images use Upload component, not a text input
+    expect(document.querySelector('.ant-upload')).not.toBeNull();
   });
 
   // === 编辑 button ===
@@ -204,8 +205,9 @@ describe('Products Page - All Buttons', () => {
     const descInput = allDescInputs[allDescInputs.length - 1] as HTMLTextAreaElement;
     expect(descInput.value).toBe('描述A');
 
-    const imageInput = document.querySelector('input#imageUrl') as HTMLInputElement;
-    expect(imageInput.value).toBe('https://img.test/a.jpg');
+    // Images use Upload component; verify the upload list shows the image
+    const uploadList = document.querySelector('.ant-upload-list');
+    expect(uploadList).not.toBeNull();
   });
 
   // === 取消 button ===

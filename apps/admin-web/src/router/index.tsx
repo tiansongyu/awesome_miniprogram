@@ -7,8 +7,11 @@ import Categories from '../pages/categories';
 import Orders from '../pages/orders';
 import Agents from '../pages/agents';
 import Members from '../pages/members';
+import Users from '../pages/users';
 import Settlements from '../pages/settlements';
 import Pricing from '../pages/pricing';
+import Coupons from '../pages/coupons';
+import Refunds from '../pages/refunds';
 import Settings from '../pages/settings';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
@@ -39,8 +42,11 @@ const router = createBrowserRouter([
       { path: 'orders', element: <Orders /> },
       { path: 'agents', element: <Agents /> },
       { path: 'members', element: <Members /> },
+      { path: 'users', element: <Users /> },
       { path: 'settlements', element: <Settlements /> },
       { path: 'pricing', element: <Pricing /> },
+      { path: 'coupons', element: <Coupons /> },
+      { path: 'refunds', element: <Refunds /> },
       { path: 'settings', element: <Settings /> },
     ],
   },

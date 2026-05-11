@@ -20,6 +20,8 @@
     "ios >= 8"
   ],
   "dependencies": {
+    "@nutui/icons-react-taro": "3.0.2-cpp.3.beta.9",
+    "@nutui/nutui-react-taro": "3.0.19",
     "@tarojs/cli": "4.0.9",
     "@tarojs/components": "4.0.9",
     "@tarojs/helper": "4.0.9",

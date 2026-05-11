@@ -1,61 +1,86 @@
 .cart {
   min-height: 100vh;
-  background: #f5f5f5;
-  padding-bottom: 120px;
+  background: #f4f5f7;
+  padding-bottom: 140px;
 
   &--empty {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding-top: 200px;
+    padding-top: 240px;
+    background: #f4f5f7;
+    min-height: 100vh;
   }
 
   &__empty-icon {
-    font-size: 80px;
-    margin-bottom: 20px;
+    font-size: 120px;
+    margin-bottom: 24px;
+    opacity: 0.6;
   }
 
   &__empty-text {
-    font-size: 28px;
+    font-size: 30px;
     color: #999;
+    margin-top: 8px;
+  }
+
+  &__empty-hint {
+    font-size: 24px;
+    color: #ccc;
+    margin-top: 12px;
   }
 
   &__list {
-    padding: 20px;
+    padding: 24px;
   }
 
   &__item {
     display: flex;
     align-items: flex-start;
     background: #fff;
-    border-radius: 12px;
-    padding: 20px;
+    border-radius: 20px;
+    padding: 24px;
     margin-bottom: 20px;
     position: relative;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+    transition: transform 0.2s;
+
+    &:active {
+      transform: scale(0.99);
+    }
   }
 
   &__item-image {
-    width: 160px;
-    height: 160px;
-    border-radius: 8px;
+    width: 180px;
+    height: 180px;
+    border-radius: 16px;
     flex-shrink: 0;
-    background: #f0f0f0;
+    background: #f5f5f5;
   }
 
   &__item-info {
     flex: 1;
-    margin-left: 20px;
+    margin-left: 24px;
     margin-right: 60px;
+    min-height: 180px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
   }
 
   &__item-name {
     font-size: 28px;
     color: #333;
-    font-weight: 500;
+    font-weight: 600;
     display: block;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
   &__item-specs {
@@ -63,6 +88,10 @@
     color: #999;
     display: block;
     margin-bottom: 16px;
+    background: #f7f8fa;
+    padding: 6px 12px;
+    border-radius: 8px;
+    display: inline-block;
   }
 
   &__item-bottom {
@@ -72,50 +101,72 @@
   }
 
   &__item-price {
-    font-size: 32px;
+    font-size: 34px;
     color: #ff6b35;
-    font-weight: bold;
+    font-weight: 700;
   }
 
   &__item-qty {
     display: flex;
     align-items: center;
+    background: #f7f8fa;
+    border-radius: 24px;
+    padding: 4px;
   }
 
   &__qty-btn {
-    width: 48px;
-    height: 48px;
-    border: 2px solid #ddd;
-    border-radius: 8px;
+    width: 52px;
+    height: 52px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border-radius: 50%;
     background: #fff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+    transition: background 0.2s;
+
+    &:active {
+      background: #f0f0f0;
+    }
   }
 
   &__qty-btn-text {
     font-size: 32px;
     color: #333;
+    font-weight: 500;
     line-height: 1;
   }
 
   &__qty-num {
     font-size: 28px;
     color: #333;
-    min-width: 60px;
+    font-weight: 600;
+    min-width: 56px;
     text-align: center;
   }
 
   &__item-delete {
     position: absolute;
-    top: 20px;
-    right: 20px;
-    padding: 8px 12px;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 120px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #ff6b6b, #e53935);
+    border-radius: 0 20px 20px 0;
+    transition: opacity 0.2s;
+
+    &:active {
+      opacity: 0.85;
+    }
   }
 
   &__item-delete-text {
-    font-size: 24px;
-    color: #999;
+    font-size: 26px;
+    color: #fff;
+    font-weight: 500;
   }
 
   &__bar {
@@ -123,13 +174,15 @@
     bottom: 0;
     left: 0;
     right: 0;
-    height: 100px;
-    background: #fff;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 30px;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.08);
+    padding: 20px 24px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    background: #fff;
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    z-index: 100;
+    border-radius: 24px 24px 0 0;
   }
 
   &__bar-total {
@@ -139,28 +192,346 @@
 
   &__bar-label {
     font-size: 28px;
-    color: #333;
+    color: #666;
   }
 
   &__bar-amount {
-    font-size: 36px;
+    font-size: 40px;
     color: #ff6b35;
-    font-weight: bold;
+    font-weight: 700;
   }
 
   &__bar-btn {
-    background: #ff6b35;
+    background: linear-gradient(135deg, #ff6b35 0%, #e53935 100%);
     border-radius: 44px;
     padding: 0 48px;
-    height: 72px;
+    height: 80px;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4);
+    transition: opacity 0.2s, transform 0.2s;
+
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.97);
+    }
   }
 
   &__bar-btn-text {
     font-size: 30px;
     color: #fff;
+    font-weight: 600;
+  }
+
+  // Order confirmation modal
+  &__modal-mask {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+
+  &__modal {
+    width: 100%;
+    max-height: 80vh;
+    background: #fff;
+    border-radius: 24px 24px 0 0;
+    padding: 32px;
+    padding-bottom: calc(32px + env(safe-area-inset-bottom));
+    overflow-y: auto;
+  }
+
+  &__modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 32px;
+  }
+
+  &__modal-title {
+    font-size: 34px;
+    font-weight: 700;
+    color: #333;
+  }
+
+  &__modal-close {
+    font-size: 36px;
+    color: #999;
+    padding: 8px;
+  }
+
+  &__modal-section {
+    margin-bottom: 32px;
+  }
+
+  &__modal-label {
+    font-size: 26px;
+    color: #999;
+    margin-bottom: 16px;
+    display: block;
+  }
+
+  &__modal-no-addr {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 24px;
+    background: #f7f8fa;
+    border-radius: 12px;
+  }
+
+  &__modal-no-addr-text {
+    font-size: 28px;
+    color: #999;
+  }
+
+  &__modal-add-addr {
+    font-size: 28px;
+    color: #ff6b35;
     font-weight: 500;
+  }
+
+  &__modal-addr-list {
+    max-height: 360px;
+    overflow-y: auto;
+  }
+
+  &__modal-addr {
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #eee;
+    margin-bottom: 16px;
+    transition: border-color 0.2s;
+
+    &--active {
+      border-color: #ff6b35;
+      background: #fff8f5;
+    }
+  }
+
+  &__modal-addr-top {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+
+  &__modal-addr-name {
+    font-size: 28px;
+    color: #333;
+    font-weight: 600;
+    margin-right: 16px;
+  }
+
+  &__modal-addr-phone {
+    font-size: 26px;
+    color: #666;
+  }
+
+  &__modal-addr-tag {
+    font-size: 20px;
+    color: #ff6b35;
+    border: 1px solid #ff6b35;
+    border-radius: 6px;
+    padding: 2px 8px;
+    margin-left: 12px;
+  }
+
+  &__modal-addr-detail {
+    font-size: 26px;
+    color: #666;
+    line-height: 1.5;
+  }
+
+  &__modal-summary {
+    font-size: 28px;
+    color: #333;
+  }
+
+  &__modal-footer {
+    margin-top: 16px;
+  }
+
+  &__modal-confirm {
+    width: 100%;
+    height: 88px;
+    background: linear-gradient(135deg, #ff6b35 0%, #e53935 100%);
+    border-radius: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4);
+
+    &--disabled {
+      opacity: 0.5;
+    }
+
+    &:active {
+      opacity: 0.9;
+      transform: scale(0.98);
+    }
+  }
+
+  &__modal-confirm-text {
+    font-size: 32px;
+    color: #fff;
+    font-weight: 600;
+  }
+
+  // 优惠券选择区域
+  &__coupon-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+  }
+
+  &__coupon-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__coupon-selected {
+    font-size: 28px;
+    color: #e53935;
+    font-weight: 600;
+  }
+
+  &__coupon-available {
+    font-size: 26px;
+    color: #ff6b35;
+  }
+
+  &__coupon-none {
+    font-size: 26px;
+    color: #999;
+  }
+
+  &__coupon-arrow {
+    font-size: 20px;
+    color: #999;
+  }
+
+  &__coupon-list {
+    margin-top: 16px;
+    border-top: 1px solid #f0f0f0;
+    padding-top: 16px;
+  }
+
+  &__coupon-empty {
+    font-size: 26px;
+    color: #999;
+    text-align: center;
+    padding: 24px 0;
+  }
+
+  &__coupon-item {
+    display: flex;
+    align-items: center;
+    padding: 20px 16px;
+    margin-bottom: 12px;
+    background: #fff8f5;
+    border-radius: 12px;
+    border: 2px solid #ffe0d0;
+    transition: all 0.2s;
+
+    &--active {
+      border-color: #ff6b35;
+      background: #fff3ed;
+    }
+  }
+
+  &__coupon-item-left {
+    min-width: 140px;
+    text-align: center;
+    padding-right: 20px;
+    border-right: 1px dashed #ffc8b0;
+  }
+
+  &__coupon-item-value {
+    font-size: 32px;
+    color: #e53935;
+    font-weight: 700;
+    display: block;
+  }
+
+  &__coupon-item-condition {
+    font-size: 22px;
+    color: #999;
+    margin-top: 4px;
+    display: block;
+  }
+
+  &__coupon-item-right {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 20px;
+  }
+
+  &__coupon-item-name {
+    font-size: 26px;
+    color: #333;
+  }
+
+  &__coupon-item-check {
+    font-size: 32px;
+    color: #ff6b35;
+    font-weight: 700;
+  }
+
+  &__coupon-cancel {
+    text-align: center;
+    padding: 16px 0;
+    margin-top: 8px;
+  }
+
+  &__coupon-cancel-text {
+    font-size: 26px;
+    color: #666;
+    text-decoration: underline;
+  }
+
+  // 金额汇总
+  &__modal-amount-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 0;
+
+    &--total {
+      margin-top: 8px;
+      padding-top: 16px;
+      border-top: 1px solid #f0f0f0;
+    }
+  }
+
+  &__modal-amount-label {
+    font-size: 26px;
+    color: #666;
+  }
+
+  &__modal-amount-value {
+    font-size: 26px;
+    color: #333;
+  }
+
+  &__modal-amount-discount {
+    font-size: 26px;
+    color: #e53935;
+  }
+
+  &__modal-amount-pay {
+    font-size: 34px;
+    color: #e53935;
+    font-weight: 700;
   }
 }

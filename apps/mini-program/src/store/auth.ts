@@ -18,6 +18,8 @@ interface AuthState {
   user: UserProfile | null;
   isLoggedIn: boolean;
   login: (code: string, bindCode?: string) => Promise<void>;
+  phoneLogin: (phone: string, password: string) => Promise<void>;
+  register: (phone: string, password: string, nickname?: string, bindCode?: string) => Promise<void>;
   logout: () => void;
   fetchProfile: () => Promise<void>;
 }
@@ -32,6 +34,28 @@ export const useAuthStore = create<AuthState>((set) => ({
       url: '/auth/wechat/login',
       method: 'POST',
       data: { code, bindCode },
+    });
+    Taro.setStorageSync('token', data.accessToken);
+    Taro.setStorageSync('refreshToken', data.refreshToken);
+    set({ token: data.accessToken, isLoggedIn: true });
+  },
+
+  phoneLogin: async (phone: string, password: string) => {
+    const data = await request<{ accessToken: string; refreshToken: string }>({
+      url: '/auth/login',
+      method: 'POST',
+      data: { phone, password },
+    });
+    Taro.setStorageSync('token', data.accessToken);
+    Taro.setStorageSync('refreshToken', data.refreshToken);
+    set({ token: data.accessToken, isLoggedIn: true });
+  },
+
+  register: async (phone: string, password: string, nickname?: string, bindCode?: string) => {
+    const data = await request<{ accessToken: string; refreshToken: string }>({
+      url: '/auth/register',
+      method: 'POST',
+      data: { phone, password, nickname, bindCode },
     });
     Taro.setStorageSync('token', data.accessToken);
     Taro.setStorageSync('refreshToken', data.refreshToken);

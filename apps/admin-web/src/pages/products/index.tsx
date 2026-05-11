@@ -1,19 +1,27 @@
-import { DeleteOutlined, PlusOutlined } from '@ant-design/icons';
+import { DeleteOutlined, EyeOutlined, PlusOutlined } from '@ant-design/icons';
 import { PageContainer, ProTable } from '@ant-design/pro-components';
 import type { ActionType, ProColumns } from '@ant-design/pro-components';
+import ReactQuill from 'react-quill-new';
+import 'react-quill-new/dist/quill.snow.css';
 import {
   Button,
+  Col,
+  Collapse,
   Drawer,
   Form,
+  Image,
   Input,
   InputNumber,
   Popconfirm,
+  Row,
   Select,
   Space,
   Switch,
   Tag,
+  Upload,
   message,
 } from 'antd';
+import type { UploadFile } from 'antd';
 import { useEffect, useRef, useState } from 'react';
 import {
   type Category,
@@ -139,6 +147,9 @@ export default function Products() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [skus, setSkus] = useState<Sku[]>([emptySkuRow()]);
+  const [fileList, setFileList] = useState<UploadFile[]>([]);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewImage, setPreviewImage] = useState('');
   const [form] = Form.useForm();
   const actionRef = useRef<ActionType>(null);
 
@@ -165,6 +176,7 @@ export default function Products() {
   const openCreate = () => {
     setEditing(null);
     setSkus([emptySkuRow()]);
+    setFileList([]);
     form.resetFields();
     setDrawerOpen(true);
   };
@@ -185,6 +197,14 @@ export default function Products() {
           }))
         : [emptySkuRow()]
     );
+    setFileList(
+      (product.images || []).map((url, i) => ({
+        uid: `-${i}`,
+        name: url.split('/').pop() || `image-${i}`,
+        status: 'done' as const,
+        url: url.startsWith('http') ? url : `http://localhost:3000${url}`,
+      }))
+    );
     setDrawerOpen(true);
   };
 
@@ -194,8 +214,8 @@ export default function Products() {
         name: editing.name,
         description: editing.description,
         categoryId: editing.categoryId,
-        imageUrl: editing.images?.[0] || '',
         status: editing.status,
+        detail: editing.detail || '',
       });
     }
   }, [drawerOpen, editing, form]);
@@ -230,7 +250,10 @@ export default function Products() {
       }
       setSubmitting(true);
 
-      const images = values.imageUrl ? [values.imageUrl] : [];
+      const images = fileList
+        .filter((f) => f.status === 'done')
+        .map((f) => f.response?.data?.url || f.url?.replace('http://localhost:3000', '') || '')
+        .filter(Boolean);
       const formattedSkus = skus.map((sku) => ({
         specs: typeof sku.specs === 'string' ? JSON.parse(sku.specs || '{}') : sku.specs,
         stock: Number(sku.stock) || 0,
@@ -241,6 +264,7 @@ export default function Products() {
       const payload = {
         name: values.name,
         description: values.description || '',
+        detail: values.detail || '',
         categoryId: values.categoryId,
         images,
         status: values.status || 'OFF_SALE',
@@ -276,7 +300,7 @@ export default function Products() {
       render: (_, record) =>
         record.images && record.images.length > 0 ? (
           <img
-            src={record.images[0]}
+            src={record.images[0].startsWith('http') ? record.images[0] : `http://localhost:3000${record.images[0]}`}
             alt={record.name}
             style={{ width: 48, height: 48, objectFit: 'cover', borderRadius: 4 }}
           />
@@ -419,94 +443,178 @@ export default function Products() {
         title={editing ? '编辑商品' : '新增商品'}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
-        width={800}
+        width={900}
         forceRender
         footer={
-          <div style={{ textAlign: 'right' }}>
-            <Button style={{ marginRight: 8 }} onClick={() => setDrawerOpen(false)}>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12, padding: '8px 0' }}>
+            <Button onClick={() => setDrawerOpen(false)}>
               取消
             </Button>
             <Button type="primary" loading={submitting} onClick={handleSubmit}>
-              确定
+              {submitting ? '提交中...' : '确定'}
             </Button>
           </div>
         }
       >
         <Form form={form} layout="vertical">
-          <Form.Item
-            name="name"
-            label="商品名称"
-            rules={[{ required: true, message: '请输入商品名称' }]}
-          >
-            <Input placeholder="请输入商品名称" />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={8}>
+              <Form.Item name="status" label="状态" initialValue="OFF_SALE">
+                <Select>
+                  <Select.Option value="ON_SALE">上架</Select.Option>
+                  <Select.Option value="OFF_SALE">下架</Select.Option>
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
+
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="name"
+                label="商品名称"
+                rules={[{ required: true, message: '请输入商品名称' }]}
+              >
+                <Input placeholder="请输入商品名称" />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item name="categoryId" label="分类" rules={[{ required: true, message: '请选择分类' }]}>
+                <Select allowClear placeholder="请选择分类">
+                  {flatCategories.map((c) => (
+                    <Select.Option key={c.id} value={c.id}>
+                      {c.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item name="description" label="商品描述">
             <Input.TextArea rows={3} placeholder="请输入商品描述" />
           </Form.Item>
 
-          <Form.Item name="categoryId" label="分类" rules={[{ required: true, message: '请选择分类' }]}>
-            <Select allowClear placeholder="请选择分类">
-              {flatCategories.map((c) => (
-                <Select.Option key={c.id} value={c.id}>
-                  {c.name}
-                </Select.Option>
-              ))}
-            </Select>
+          <Form.Item label="商品图片">
+            <Image.PreviewGroup>
+              <Upload
+                listType="picture-card"
+                fileList={fileList}
+                action="http://localhost:3000/upload/image"
+                headers={{ Authorization: `Bearer ${localStorage.getItem('accessToken') || ''}` }}
+                name="file"
+                accept="image/*"
+                onChange={({ fileList: newList }) => setFileList(newList)}
+                onPreview={(file) => {
+                  const url = file.url || file.thumbUrl;
+                  if (url) {
+                    window.open(url, '_blank');
+                  }
+                }}
+                itemRender={(originNode, file) => {
+                  const url = file.url || file.thumbUrl;
+                  return (
+                    <div style={{ position: 'relative' }}>
+                      {originNode}
+                      {url && file.status === 'done' && (
+                        <div
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            left: 0,
+                            width: '100%',
+                            height: '100%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            background: 'rgba(0,0,0,0.5)',
+                            opacity: 0,
+                            transition: 'opacity 0.3s',
+                            cursor: 'pointer',
+                            borderRadius: 8,
+                          }}
+                          onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '1'; }}
+                          onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.opacity = '0'; }}
+                          onClick={() => { setPreviewImage(url); setPreviewOpen(true); }}
+                        >
+                          <EyeOutlined style={{ color: '#fff', fontSize: 20 }} />
+                        </div>
+                      )}
+                    </div>
+                  );
+                }}
+              >
+                {fileList.length >= 9 ? null : (
+                  <div>
+                    <PlusOutlined />
+                    <div style={{ marginTop: 8 }}>上传</div>
+                  </div>
+                )}
+              </Upload>
+            </Image.PreviewGroup>
           </Form.Item>
 
-          <Form.Item name="imageUrl" label="图片URL">
-            <Input placeholder="请输入图片地址（暂不支持上传）" />
-          </Form.Item>
-
-          <Form.Item name="status" label="状态" initialValue="OFF_SALE">
-            <Select>
-              <Select.Option value="ON_SALE">上架</Select.Option>
-              <Select.Option value="OFF_SALE">下架</Select.Option>
-            </Select>
+          <Form.Item name="detail" label="商品详情">
+            <ReactQuill theme="snow" placeholder="请输入商品详情..." style={{ minHeight: 300 }} />
           </Form.Item>
         </Form>
 
-        <div style={{ marginTop: 16 }}>
-          <div
-            style={{
-              display: 'flex',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              marginBottom: 12,
-            }}
-          >
-            <span style={{ fontWeight: 500, fontSize: 14 }}>SKU 列表</span>
-            <Button
-              size="small"
-              icon={<PlusOutlined />}
-              onClick={() => setSkus((prev) => [...prev, emptySkuRow()])}
-            >
-              添加SKU
-            </Button>
-          </div>
+        <Collapse
+          defaultActiveKey={['skus']}
+          style={{ marginTop: 16 }}
+          items={[
+            {
+              key: 'skus',
+              label: (
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                  <span style={{ fontWeight: 500, fontSize: 14 }}>SKU 列表 ({skus.length})</span>
+                </div>
+              ),
+              extra: (
+                <Button
+                  size="small"
+                  icon={<PlusOutlined />}
+                  onClick={(e) => { e.stopPropagation(); setSkus((prev) => [...prev, emptySkuRow()]); }}
+                >
+                  添加SKU
+                </Button>
+              ),
+              children: (
+                <>
+                  {skus.map((sku, i) => (
+                    <SkuRow
+                      key={i}
+                      index={i}
+                      sku={sku}
+                      onChange={(idx, updated) =>
+                        setSkus((prev) => prev.map((s, j) => (j === idx ? updated : s)))
+                      }
+                      onRemove={(idx) =>
+                        setSkus((prev) => prev.filter((_, j) => j !== idx))
+                      }
+                    />
+                  ))}
 
-          {skus.map((sku, i) => (
-            <SkuRow
-              key={i}
-              index={i}
-              sku={sku}
-              onChange={(idx, updated) =>
-                setSkus((prev) => prev.map((s, j) => (j === idx ? updated : s)))
-              }
-              onRemove={(idx) =>
-                setSkus((prev) => prev.filter((_, j) => j !== idx))
-              }
-            />
-          ))}
-
-          {skus.length === 0 && (
-            <div style={{ color: '#999', textAlign: 'center', padding: '16px 0' }}>
-              暂无SKU，点击「添加SKU」新增
-            </div>
-          )}
-        </div>
+                  {skus.length === 0 && (
+                    <div style={{ color: '#999', textAlign: 'center', padding: '16px 0' }}>
+                      暂无SKU，点击「添加SKU」新增
+                    </div>
+                  )}
+                </>
+              ),
+            },
+          ]}
+        />
       </Drawer>
+
+      <Image
+        style={{ display: 'none' }}
+        preview={{
+          visible: previewOpen,
+          src: previewImage,
+          onVisibleChange: (visible) => setPreviewOpen(visible),
+        }}
+      />
     </PageContainer>
   );
 }

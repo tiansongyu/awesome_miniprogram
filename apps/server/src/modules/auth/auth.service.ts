@@ -1,15 +1,17 @@
 import {
   Injectable,
   UnauthorizedException,
+  ConflictException,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../../prisma/prisma.service';
 import { RedisService } from '../redis/redis.service';
-import { AdminLoginDto } from './dto/login.dto';
+import { AdminLoginDto, LoginDto } from './dto/login.dto';
+import { RegisterDto } from './dto/register.dto';
 import { WechatLoginDto } from './dto/wechat-login.dto';
-import { Role } from '@prisma/client';
+import { Role, MemberLevel } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -19,6 +21,52 @@ export class AuthService {
     private configService: ConfigService,
     private redis: RedisService,
   ) {}
+
+  async register(dto: RegisterDto) {
+    const existing = await this.prisma.user.findUnique({
+      where: { phone: dto.phone },
+    });
+    if (existing) {
+      throw new ConflictException('该手机号已注册');
+    }
+
+    const hashedPassword = await bcrypt.hash(dto.password, 10);
+
+    let parentAgentId: string | undefined;
+    if (dto.bindCode) {
+      const agent = await this.prisma.user.findUnique({
+        where: { bindCode: dto.bindCode },
+      });
+      if (agent) {
+        parentAgentId = agent.id;
+      }
+    }
+
+    const bindCode = this.generateBindCode();
+
+    const user = await this.prisma.user.create({
+      data: {
+        phone: dto.phone,
+        password: hashedPassword,
+        nickname: dto.nickname || undefined,
+        role: Role.CUSTOMER,
+        memberLevel: MemberLevel.BRONZE,
+        parentAgentId,
+        bindCode,
+      },
+    });
+
+    return this.generateTokens(user.id, user.role);
+  }
+
+  private generateBindCode(): string {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let code = '';
+    for (let i = 0; i < 8; i++) {
+      code += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return code;
+  }
 
   async adminLogin(dto: AdminLoginDto) {
     const user = await this.prisma.user.findUnique({
@@ -33,6 +81,23 @@ export class AuthService {
     }
     if (user.role === Role.CUSTOMER) {
       throw new UnauthorizedException('无管理权限');
+    }
+    return this.generateTokens(user.id, user.role);
+  }
+
+  async login(dto: LoginDto) {
+    const user = await this.prisma.user.findUnique({
+      where: { phone: dto.phone },
+    });
+    if (!user || !user.password) {
+      throw new UnauthorizedException('账号或密码错误');
+    }
+    if (user.frozen) {
+      throw new UnauthorizedException('账号已被冻结');
+    }
+    const valid = await bcrypt.compare(dto.password, user.password);
+    if (!valid) {
+      throw new UnauthorizedException('账号或密码错误');
     }
     return this.generateTokens(user.id, user.role);
   }

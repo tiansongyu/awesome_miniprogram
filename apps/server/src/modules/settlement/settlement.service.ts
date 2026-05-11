@@ -137,6 +137,22 @@ export class SettlementService {
     return chain;
   }
 
+  async getAllSettlements(page = 1, pageSize = 20) {
+    const [items, total] = await Promise.all([
+      this.prisma.settlement.findMany({
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          order: { select: { orderNo: true, totalAmount: true, createdAt: true } },
+          agent: { select: { id: true, nickname: true, phone: true, role: true } },
+        },
+      }),
+      this.prisma.settlement.count(),
+    ]);
+    return { items, total, page, pageSize };
+  }
+
   async getAgentSettlements(agentId: string, page = 1, pageSize = 20) {
     const [items, total] = await Promise.all([
       this.prisma.settlement.findMany({

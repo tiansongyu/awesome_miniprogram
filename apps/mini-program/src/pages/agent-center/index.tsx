@@ -1,5 +1,5 @@
-import { View, Text } from '@tarojs/components';
-import Taro, { useDidShow } from '@tarojs/taro';
+import { View, Text, Button } from '@tarojs/components';
+import Taro, { useDidShow, useShareAppMessage } from '@tarojs/taro';
 import { useState } from 'react';
 import { request } from '../../utils/request';
 import { useAuthStore } from '../../store/auth';
@@ -30,6 +30,12 @@ export default function AgentCenter() {
   const [bindCode, setBindCode] = useState('');
   const [agents, setAgents] = useState<Agent[]>([]);
   const [loading, setLoading] = useState(false);
+
+  useShareAppMessage(() => ({
+    title: `邀请你加入，使用邀请码：${bindCode}`,
+    path: `/pages/login/index?inviteCode=${bindCode}`,
+    imageUrl: '',
+  }));
 
   useDidShow(() => {
     fetchData();
@@ -62,29 +68,40 @@ export default function AgentCenter() {
 
   const roleLabel = user?.role ? (ROLE_LABEL_MAP[user.role] ?? user.role) : '';
 
+  const getAvatarText = (name?: string) => {
+    return name ? name.charAt(0).toUpperCase() : '?';
+  };
+
   return (
     <View className="agent-center">
       {/* Identity banner */}
       <View className="agent-center__banner">
-        <Text className="agent-center__banner-name">{user?.nickname ?? '代理'}</Text>
-        {roleLabel ? (
-          <Text className="agent-center__banner-role">{roleLabel}</Text>
-        ) : null}
+        <View className="agent-center__banner-avatar">
+          <Text className="agent-center__banner-avatar-text">
+            {getAvatarText(user?.nickname)}
+          </Text>
+        </View>
+        <View className="agent-center__banner-content">
+          <Text className="agent-center__banner-name">{user?.nickname ?? '代理'}</Text>
+          {roleLabel ? (
+            <Text className="agent-center__banner-role">{roleLabel}</Text>
+          ) : null}
+        </View>
       </View>
 
       {/* Earnings stats */}
       <View className="agent-center__stats">
         <View className="agent-center__stat-card">
-          <Text className="agent-center__stat-value">¥{stats.total.toFixed(2)}</Text>
-          <Text className="agent-center__stat-label">累计收益</Text>
+          <Text className="agent-center__stat-value">{stats.total.toFixed(2)}</Text>
+          <Text className="agent-center__stat-label">累计收益(元)</Text>
         </View>
         <View className="agent-center__stat-card">
-          <Text className="agent-center__stat-value">¥{stats.today.toFixed(2)}</Text>
-          <Text className="agent-center__stat-label">今日收益</Text>
+          <Text className="agent-center__stat-value">{stats.today.toFixed(2)}</Text>
+          <Text className="agent-center__stat-label">今日收益(元)</Text>
         </View>
         <View className="agent-center__stat-card">
-          <Text className="agent-center__stat-value">¥{stats.thisMonth.toFixed(2)}</Text>
-          <Text className="agent-center__stat-label">本月收益</Text>
+          <Text className="agent-center__stat-value">{stats.thisMonth.toFixed(2)}</Text>
+          <Text className="agent-center__stat-label">本月收益(元)</Text>
         </View>
       </View>
 
@@ -97,6 +114,9 @@ export default function AgentCenter() {
             <Text className="agent-center__copy-text">复制</Text>
           </View>
         </View>
+        <Button className="agent-center__share-btn" openType="share">
+          <Text className="agent-center__share-btn-text">分享邀请</Text>
+        </Button>
       </View>
 
       {/* Sub-agents list */}
@@ -117,11 +137,18 @@ export default function AgentCenter() {
         ) : (
           agents.map((agent) => (
             <View key={agent.id} className="agent-center__agent-card">
-              <View className="agent-center__agent-info">
-                <Text className="agent-center__agent-name">{agent.nickname}</Text>
-                <Text className="agent-center__agent-role">
-                  {ROLE_LABEL_MAP[agent.role] ?? agent.role}
-                </Text>
+              <View className="agent-center__agent-left">
+                <View className="agent-center__agent-avatar">
+                  <Text className="agent-center__agent-avatar-text">
+                    {getAvatarText(agent.nickname)}
+                  </Text>
+                </View>
+                <View className="agent-center__agent-info">
+                  <Text className="agent-center__agent-name">{agent.nickname}</Text>
+                  <Text className="agent-center__agent-role">
+                    {ROLE_LABEL_MAP[agent.role] ?? agent.role}
+                  </Text>
+                </View>
               </View>
               {agent.isFrozen && (
                 <Text className="agent-center__frozen-tag">已冻结</Text>

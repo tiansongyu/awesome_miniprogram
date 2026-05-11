@@ -13,6 +13,14 @@ import { SettlementModule } from './modules/settlement/settlement.module';
 import { QrcodeModule } from './modules/qrcode/qrcode.module';
 import { UploadModule } from './modules/upload/upload.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { AddressModule } from './modules/address/address.module';
+import { StatsModule } from './modules/stats/stats.module';
+import { CouponModule } from './modules/coupon/coupon.module';
+import { SignInModule } from './modules/sign-in/sign-in.module';
+import { FavoriteModule } from './modules/favorite/favorite.module';
+import { ReviewModule } from './modules/review/review.module';
+import { MessageModule } from './modules/message/message.module';
+import { RefundModule } from './modules/refund/refund.module';
 
 @Module({
   imports: [
@@ -37,6 +45,14 @@ import { PaymentModule } from './modules/payment/payment.module';
     QrcodeModule,
     UploadModule,
     PaymentModule,
+    AddressModule,
+    StatsModule,
+    CouponModule,
+    SignInModule,
+    FavoriteModule,
+    ReviewModule,
+    MessageModule,
+    RefundModule,
   ],
 })
 export class AppModule {}

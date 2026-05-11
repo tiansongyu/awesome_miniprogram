@@ -1,6 +1,7 @@
 .order-detail {
   min-height: 100vh;
   background: #f5f5f5;
+  padding-bottom: 120px;
 
   &--loading,
   &--empty {
@@ -17,15 +18,86 @@
   }
 
   &__banner {
-    display: flex;
-    align-items: center;
-    padding: 40px 32px;
+    padding: 48px 32px;
     margin-bottom: 20px;
   }
 
   &__banner-status {
-    font-size: 40px;
+    font-size: 44px;
     font-weight: 700;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  &__banner-desc {
+    font-size: 26px;
+    opacity: 0.85;
+    display: block;
+  }
+
+  // Address section
+  &__address-section {
+    position: relative;
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: repeating-linear-gradient(
+        135deg,
+        #ff6b35 0,
+        #ff6b35 8px,
+        transparent 8px,
+        transparent 12px,
+        #007aff 12px,
+        #007aff 20px,
+        transparent 20px,
+        transparent 24px
+      );
+    }
+  }
+
+  &__address-row {
+    display: flex;
+    align-items: flex-start;
+  }
+
+  &__address-icon {
+    font-size: 36px;
+    margin-right: 16px;
+    margin-top: 4px;
+  }
+
+  &__address-content {
+    flex: 1;
+  }
+
+  &__address-top {
+    display: flex;
+    align-items: center;
+    margin-bottom: 12px;
+    gap: 24px;
+  }
+
+  &__address-name {
+    font-size: 30px;
+    font-weight: 600;
+    color: #333;
+  }
+
+  &__address-phone {
+    font-size: 28px;
+    color: #666;
+  }
+
+  &__address-detail {
+    font-size: 26px;
+    color: #666;
+    line-height: 1.5;
+    display: block;
   }
 
   &__section {
@@ -62,11 +134,13 @@
   &__label {
     font-size: 26px;
     color: #999;
+    flex-shrink: 0;
   }
 
   &__value {
     font-size: 26px;
     color: #333;
+    text-align: right;
 
     &--profit {
       color: #4caf50;
@@ -74,17 +148,43 @@
     }
   }
 
+  // Item with image
   &__item {
     display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     padding: 16px 0;
     border-top: 1px solid #f0f0f0;
+  }
+
+  &__item-image {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    margin-right: 20px;
+    background: #f5f5f5;
+    flex-shrink: 0;
+  }
+
+  &__item-placeholder {
+    width: 140px;
+    height: 140px;
+    border-radius: 12px;
+    margin-right: 20px;
+    background: #f9f9f9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  &__item-placeholder-text {
+    font-size: 48px;
   }
 
   &__item-info {
     flex: 1;
     margin-right: 20px;
+    overflow: hidden;
   }
 
   &__item-name {
@@ -92,22 +192,26 @@
     color: #333;
     display: block;
     margin-bottom: 8px;
+    line-height: 1.4;
   }
 
   &__item-specs {
     font-size: 24px;
     color: #999;
+    display: block;
   }
 
   &__item-right {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    flex-shrink: 0;
   }
 
   &__item-price {
     font-size: 28px;
     color: #333;
+    font-weight: 500;
     margin-bottom: 8px;
   }
 
@@ -116,6 +220,47 @@
     color: #999;
   }
 
+  // Price detail section
+  &__price-detail {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  &__price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+
+    &--total {
+      padding-top: 16px;
+      margin-top: 8px;
+      border-top: 1px solid #f0f0f0;
+    }
+  }
+
+  &__price-label {
+    font-size: 26px;
+    color: #999;
+  }
+
+  &__price-value {
+    font-size: 26px;
+    color: #333;
+
+    &--discount {
+      color: #ff6b35;
+    }
+
+    &--total {
+      font-size: 34px;
+      font-weight: 700;
+      color: #ff6b35;
+    }
+  }
+
+  // Total row (legacy)
   &__total-row {
     display: flex;
     justify-content: flex-end;
@@ -144,5 +289,126 @@
       border-top: 1px dashed #eee;
       margin-top: 8px;
     }
+  }
+
+  // Action buttons
+  &__actions {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 20px 24px;
+    padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    background: #fff;
+    box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.06);
+    gap: 20px;
+    z-index: 100;
+  }
+
+  &__btn {
+    padding: 16px 40px;
+    border-radius: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &--default {
+      background: #fff;
+      border: 1px solid #ddd;
+    }
+
+    &--primary {
+      background: linear-gradient(135deg, #ff6b35, #ff8f1f);
+      border: none;
+      box-shadow: 0 4px 16px rgba(255, 107, 53, 0.35);
+    }
+
+    &--warning {
+      background: #fff;
+      border: 1px solid #ff9500;
+    }
+  }
+
+  &__btn-text {
+    font-size: 28px;
+
+    &--default {
+      color: #666;
+    }
+
+    &--primary {
+      color: #fff;
+      font-weight: 600;
+    }
+
+    &--warning {
+      color: #ff9500;
+      font-weight: 500;
+    }
+  }
+
+  // Logistics section
+  &__logistics {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px 0;
+  }
+
+  &__logistics-icon {
+    font-size: 40px;
+    margin-right: 16px;
+    margin-top: 4px;
+  }
+
+  &__logistics-content {
+    flex: 1;
+  }
+
+  &__value--copy {
+    color: #007aff;
+  }
+
+  // Refund section
+  &__refund-item {
+    padding: 16px 0;
+
+    & + & {
+      border-top: 1px dashed #eee;
+      margin-top: 12px;
+    }
+  }
+
+  &__refund-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+  }
+
+  &__refund-label {
+    font-size: 26px;
+    color: #999;
+    flex-shrink: 0;
+  }
+
+  &__refund-status {
+    font-size: 26px;
+    font-weight: 600;
+  }
+
+  &__refund-amount {
+    font-size: 28px;
+    color: #ff6b35;
+    font-weight: 500;
+  }
+
+  &__refund-reason {
+    font-size: 26px;
+    color: #333;
+    text-align: right;
+    max-width: 400px;
   }
 }

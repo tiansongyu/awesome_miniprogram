@@ -1,23 +1,51 @@
 .profile {
   min-height: 100vh;
-  background: #f5f5f5;
+  background: #f4f5f7;
 
   &__card {
-    background: linear-gradient(135deg, #ff6b35 0%, #ff8c5a 100%);
-    padding: 60px 32px 40px;
+    background: linear-gradient(135deg, #ff6b35 0%, #e53935 100%);
+    padding: 80px 32px 50px;
+    border-radius: 0 0 32px 32px;
+    position: relative;
+    overflow: hidden;
+
+    &::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 200px;
+      height: 200px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    &::after {
+      content: '';
+      position: absolute;
+      bottom: -40px;
+      left: -40px;
+      width: 160px;
+      height: 160px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.06);
+    }
   }
 
   &__user {
     display: flex;
     align-items: center;
+    position: relative;
+    z-index: 1;
   }
 
   &__avatar {
-    width: 80px;
-    height: 80px;
+    width: 120px;
+    height: 120px;
     border-radius: 50%;
-    border: 3px solid rgba(255, 255, 255, 0.6);
+    border: 4px solid rgba(255, 255, 255, 0.8);
     flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 
     &--placeholder {
       background: rgba(255, 255, 255, 0.3);
@@ -25,120 +53,223 @@
   }
 
   &__info {
-    margin-left: 24px;
+    margin-left: 28px;
     flex: 1;
   }
 
   &__nickname {
     display: block;
-    font-size: 36px;
-    font-weight: 600;
+    font-size: 38px;
+    font-weight: 700;
     color: #fff;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   }
 
   &__meta {
     display: flex;
     align-items: center;
     gap: 12px;
+    flex-wrap: wrap;
   }
 
   &__badge {
     font-size: 22px;
-    padding: 4px 14px;
+    padding: 6px 16px;
     border-radius: 20px;
     font-weight: 500;
 
     &--gold {
-      background: #ffd700;
+      background: linear-gradient(135deg, #ffd700, #ffb300);
       color: #7a5800;
+      box-shadow: 0 2px 8px rgba(255, 215, 0, 0.4);
     }
 
     &--silver {
-      background: #c0c0c0;
+      background: linear-gradient(135deg, #e0e0e0, #bdbdbd);
       color: #444;
+      box-shadow: 0 2px 8px rgba(192, 192, 192, 0.4);
     }
 
     &--bronze {
-      background: #cd7f32;
+      background: linear-gradient(135deg, #cd7f32, #a0522d);
       color: #fff;
+      box-shadow: 0 2px 8px rgba(205, 127, 50, 0.4);
     }
   }
 
   &__role {
     font-size: 22px;
-    color: rgba(255, 255, 255, 0.85);
+    color: rgba(255, 255, 255, 0.95);
     background: rgba(255, 255, 255, 0.2);
-    padding: 4px 14px;
+    padding: 6px 16px;
     border-radius: 20px;
+    backdrop-filter: blur(4px);
   }
 
   &__guest {
     display: flex;
     align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  &__login-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
     gap: 24px;
+    background: #fff;
+    border-radius: 24px;
+    padding: 40px 32px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  }
+
+  &__input {
+    width: 100%;
+    height: 88px;
+    background: #f7f8fa;
+    border-radius: 44px;
+    padding: 0 36px;
+    font-size: 28px;
+    color: #333;
+    box-sizing: border-box;
+    border: 1px solid #eee;
+    transition: border-color 0.3s;
+
+    &:focus {
+      border-color: #ff6b35;
+      background: #fff;
+    }
   }
 
   &__login-btn {
-    background: #fff !important;
-    color: #ff6b35 !important;
+    width: 100% !important;
     font-size: 30px !important;
     font-weight: 600 !important;
-    border-radius: 40px !important;
-    padding: 0 40px !important;
-    height: 72px !important;
-    line-height: 72px !important;
+    border-radius: 44px !important;
+    height: 88px !important;
+    line-height: 88px !important;
     border: none !important;
+    margin-top: 4px !important;
+    transition: opacity 0.2s !important;
+
+    &--primary {
+      background: linear-gradient(135deg, #ff6b35 0%, #e53935 100%) !important;
+      color: #fff !important;
+      box-shadow: 0 4px 16px rgba(255, 107, 53, 0.4) !important;
+    }
+
+    &--wechat {
+      background: #07c160 !important;
+      color: #fff !important;
+      box-shadow: 0 4px 16px rgba(7, 193, 96, 0.3) !important;
+    }
   }
 
   &__menu {
-    margin: 24px 0;
+    margin: 24px 24px 0;
     background: #fff;
-    border-radius: 16px;
+    border-radius: 20px;
     overflow: hidden;
-    margin-left: 24px;
-    margin-right: 24px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
   }
 
   &__menu-item {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 32px 32px;
-    border-bottom: 1px solid #f0f0f0;
+    padding: 34px 32px;
+    border-bottom: 1px solid #f5f5f5;
+    transition: background 0.2s;
 
     &:last-child {
       border-bottom: none;
     }
+
+    &:active {
+      background: #f9f9f9;
+    }
+
+    &--agent {
+      .profile__menu-icon {
+        color: #ff6b35;
+      }
+      .profile__menu-label {
+        color: #ff6b35;
+        font-weight: 600;
+      }
+    }
+  }
+
+  &__menu-icon {
+    font-size: 40px;
+    margin-right: 20px;
+    width: 48px;
+    text-align: center;
   }
 
   &__menu-label {
     font-size: 30px;
     color: #333;
+    flex: 1;
   }
 
   &__menu-arrow {
-    font-size: 36px;
+    font-size: 32px;
     color: #ccc;
     line-height: 1;
+    font-weight: 300;
   }
 
   &__menu-value {
     font-size: 28px;
     color: #ff6b35;
-    font-weight: 500;
+    font-weight: 600;
+    margin-right: 8px;
+  }
+
+  &__menu-badge {
+    font-size: 22px;
+    color: #fff;
+    background: #e53935;
+    min-width: 36px;
+    height: 36px;
+    line-height: 36px;
+    text-align: center;
+    border-radius: 18px;
+    padding: 0 10px;
+    margin-right: 8px;
   }
 
   &__logout {
-    margin: 40px 24px;
+    margin: 32px 24px;
     background: #fff;
-    border-radius: 16px;
+    border-radius: 20px;
     padding: 32px;
     text-align: center;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    transition: background 0.2s;
+
+    &:active {
+      background: #fafafa;
+    }
   }
 
   &__logout-text {
     font-size: 30px;
     color: #e53935;
+    font-weight: 500;
+  }
+
+  &__switch-mode {
+    text-align: center;
+    padding: 8px 0;
+  }
+
+  &__switch-text {
+    font-size: 26px;
+    color: #ff6b35;
   }
 }

@@ -1,9 +1,14 @@
-import { View, Text, Image, ScrollView } from '@tarojs/components';
-import Taro, { useDidShow } from '@tarojs/taro';
+import { View, Text, Image, ScrollView, RichText, Button } from '@tarojs/components';
+import Taro, { useDidShow, useShareAppMessage } from '@tarojs/taro';
 import { useState } from 'react';
-import { request } from '../../utils/request';
+import { request, BASE_URL } from '../../utils/request';
 import { useCartStore } from '../../store/cart';
 import './index.scss';
+
+function fullUrl(url: string) {
+  if (!url) return '';
+  return url.startsWith('http') ? url : `${BASE_URL}${url}`;
+}
 
 interface PriceItem {
   priceType: string;
@@ -22,6 +27,7 @@ interface Product {
   id: string;
   name: string;
   description: string;
+  detail?: string;
   images: string[];
   category: { id: string; name: string };
   skus: Sku[];
@@ -63,13 +69,52 @@ export default function ProductDetail() {
   const [quantity, setQuantity] = useState(1);
   const [currentImage, setCurrentImage] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [showSharePanel, setShowSharePanel] = useState(false);
+  const [favorited, setFavorited] = useState(false);
+  const [reviews, setReviews] = useState<any[]>([]);
   const addItem = useCartStore((s) => s.addItem);
+
+  useShareAppMessage(() => ({
+    title: product?.name || '好物推荐',
+    path: `/pages/product-detail/index?id=${product?.id}`,
+    imageUrl: product?.images?.[0] ? fullUrl(product.images[0]) : '',
+  }));
 
   useDidShow(() => {
     const params = Taro.getCurrentInstance().router?.params || {};
     const id = params.id as string;
-    if (id) loadProduct(id);
+    if (id) {
+      loadProduct(id);
+      loadFavoriteStatus(id);
+      loadReviews(id);
+    }
   });
+
+  async function loadFavoriteStatus(id: string) {
+    try {
+      const res = await request<{ favorited: boolean }>({ url: `/favorites/${id}/status` });
+      setFavorited(res.favorited);
+    } catch (_) {}
+  }
+
+  async function loadReviews(id: string) {
+    try {
+      const res = await request<{ items: any[] }>({ url: `/reviews/product/${id}?pageSize=5` });
+      setReviews(res.items || []);
+    } catch (_) {}
+  }
+
+  async function handleToggleFavorite() {
+    if (!product) return;
+    try {
+      const res = await request<{ favorited: boolean }>({
+        url: `/favorites/${product.id}`,
+        method: 'POST',
+      });
+      setFavorited(res.favorited);
+      Taro.showToast({ title: res.favorited ? '已收藏' : '已取消收藏', icon: 'none' });
+    } catch (_) {}
+  }
 
   async function loadProduct(id: string) {
     setLoading(true);
@@ -155,7 +200,7 @@ export default function ProductDetail() {
             <>
               <Image
                 className="main-image"
-                src={product.images[currentImage]}
+                src={fullUrl(product.images[currentImage])}
                 mode="aspectFill"
               />
               {product.images.length > 1 && (
@@ -231,12 +276,61 @@ export default function ProductDetail() {
           </View>
         </View>
 
+        {/* Product detail rich text */}
+        {product.detail && (
+          <View className="detail-section">
+            <View className="detail-title">
+              <Text>商品详情</Text>
+            </View>
+            <RichText nodes={product.detail} />
+          </View>
+        )}
+
+        {/* User reviews */}
+        <View className="detail-section">
+          <View className="detail-title">
+            <Text>用户评价 ({reviews.length})</Text>
+          </View>
+          {reviews.length === 0 ? (
+            <View className="review-empty">
+              <Text className="review-empty__text">暂无评价</Text>
+            </View>
+          ) : (
+            reviews.map((review) => (
+              <View key={review.id} className="review-item">
+                <View className="review-item__header">
+                  <Text className="review-item__user">{review.user?.nickname || '匿名用户'}</Text>
+                  <Text className="review-item__rating">{'★'.repeat(review.rating)}{'☆'.repeat(5 - review.rating)}</Text>
+                </View>
+                {review.content && (
+                  <Text className="review-item__content">{review.content}</Text>
+                )}
+                {review.images && review.images.length > 0 && (
+                  <View className="review-item__images">
+                    {review.images.map((img: string, idx: number) => (
+                      <Image key={idx} className="review-item__image" src={fullUrl(img)} mode="aspectFill" />
+                    ))}
+                  </View>
+                )}
+                <Text className="review-item__time">{review.createdAt?.slice(0, 10)}</Text>
+              </View>
+            ))
+          )}
+        </View>
+
         {/* Description spacer so bottom bar doesn't cover content */}
         <View className="bottom-spacer" />
       </ScrollView>
 
       {/* Bottom action bar */}
       <View className="action-bar">
+        <View className={`btn-favorite ${favorited ? 'active' : ''}`} onClick={handleToggleFavorite}>
+          <Text className="btn-favorite__icon">{favorited ? '❤' : '♡'}</Text>
+          <Text className="btn-favorite__text">{favorited ? '已收藏' : '收藏'}</Text>
+        </View>
+        <View className="btn-share" onClick={() => setShowSharePanel(true)}>
+          <Text>分享</Text>
+        </View>
         <View className="btn-cart" onClick={handleAddToCart}>
           <Text>加入购物车</Text>
         </View>
@@ -244,6 +338,43 @@ export default function ProductDetail() {
           <Text>立即购买</Text>
         </View>
       </View>
+
+      {/* Share panel */}
+      {showSharePanel && (
+        <View className="share-mask" onClick={() => setShowSharePanel(false)}>
+          <View className="share-panel" onClick={(e) => e.stopPropagation()}>
+            <Text className="share-panel__title">分享商品</Text>
+            <View className="share-panel__options">
+              <Button className="share-panel__btn share-panel__btn--wechat" openType="share" onClick={() => setShowSharePanel(false)}>
+                <View className="share-panel__icon share-panel__icon--wechat">
+                  <Text>微</Text>
+                </View>
+                <Text className="share-panel__label">分享给好友</Text>
+              </Button>
+              <View
+                className="share-panel__btn"
+                onClick={() => {
+                  Taro.setClipboardData({
+                    data: `${product?.name} - 快来看看这个好物！`,
+                    success: () => {
+                      Taro.showToast({ title: '已复制', icon: 'success' });
+                      setShowSharePanel(false);
+                    },
+                  });
+                }}
+              >
+                <View className="share-panel__icon share-panel__icon--link">
+                  <Text>链</Text>
+                </View>
+                <Text className="share-panel__label">复制链接</Text>
+              </View>
+            </View>
+            <View className="share-panel__cancel" onClick={() => setShowSharePanel(false)}>
+              <Text>取消</Text>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 }

@@ -64,13 +64,29 @@ export class AgentService {
     });
   }
 
-  async getSubAgents(currentUser: User, page: number, pageSize: number) {
+  async getSubAgents(
+    currentUser: User,
+    page: number,
+    pageSize: number,
+    role?: string,
+  ) {
+    const agentRoles = [Role.AGENT_L1, Role.AGENT_L2, Role.AGENT_L3];
+    const isSuperAdmin = currentUser.role === Role.SUPER_ADMIN;
+
+    const whereClause: any = {
+      role: role
+        ? (role as Role)
+        : { in: agentRoles },
+    };
+
+    // SUPER_ADMIN can see all agents; others only see their own sub-agents
+    if (!isSuperAdmin) {
+      whereClause.parentAgentId = currentUser.id;
+    }
+
     const [items, total] = await Promise.all([
       this.prisma.user.findMany({
-        where: {
-          parentAgentId: currentUser.id,
-          role: { not: Role.CUSTOMER },
-        },
+        where: whereClause,
         skip: (page - 1) * pageSize,
         take: pageSize,
         orderBy: { createdAt: 'desc' },
@@ -87,10 +103,7 @@ export class AgentService {
         },
       }),
       this.prisma.user.count({
-        where: {
-          parentAgentId: currentUser.id,
-          role: { not: Role.CUSTOMER },
-        },
+        where: whereClause,
       }),
     ]);
     return { items, total, page, pageSize };

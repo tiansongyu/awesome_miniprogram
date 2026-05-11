@@ -12,6 +12,7 @@ export class ProductService {
       data: {
         name: dto.name,
         description: dto.description,
+        detail: dto.detail,
         images: dto.images,
         categoryId: dto.categoryId,
         status: dto.status || ProductStatus.DRAFT,
