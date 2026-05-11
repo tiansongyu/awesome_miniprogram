@@ -74,7 +74,7 @@ export default function Index() {
       const data = await request<{ items: Product[]; total: number }>({
         url: '/products?page=1&pageSize=10&status=ON_SALE',
       });
-      setProducts(data.items);
+      setProducts(data.items || []);
     } catch (_) {
     } finally {
       setLoading(false);
@@ -137,8 +137,6 @@ export default function Index() {
             <View className="banner-decoration"></View>
           </View>
         </View>
-
-
         {/* Group buy section */}
         {groupActivities.length > 0 && (
           <View className="section">
