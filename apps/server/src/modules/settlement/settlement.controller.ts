@@ -28,9 +28,9 @@ export class SettlementController {
     return this.settlementService.getAllSettlements(page, pageSize);
   }
 
-  /** 代理查看自己的结算记录 */
+  /** 查看自己的结算记录 */
   @Get('my')
-  @Roles(Role.SUPER_ADMIN, Role.AGENT_L1, Role.AGENT_L2, Role.AGENT_L3)
+  @Roles(Role.SUPER_ADMIN, Role.AGENT_L1, Role.AGENT_L2, Role.AGENT_L3, Role.CUSTOMER)
   getMySettlements(
     @CurrentUser() user: User,
     @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
@@ -39,9 +39,9 @@ export class SettlementController {
     return this.settlementService.getAgentSettlements(user.id, page, pageSize);
   }
 
-  /** 代理查看自己的收益统计 */
+  /** 查看自己的收益统计 */
   @Get('stats')
-  @Roles(Role.SUPER_ADMIN, Role.AGENT_L1, Role.AGENT_L2, Role.AGENT_L3)
+  @Roles(Role.SUPER_ADMIN, Role.AGENT_L1, Role.AGENT_L2, Role.AGENT_L3, Role.CUSTOMER)
   getMyStats(@CurrentUser() user: User) {
     return this.settlementService.getSettlementStats(user.id);
   }

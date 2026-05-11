@@ -156,10 +156,10 @@ export default function OrderDetail() {
   }
 
   const si = STATUS_MAP[order.status] || { label: order.status, bgColor: '#999', textColor: '#fff', desc: '' };
-  const totalProfit = order.settlements.reduce((sum, s) => sum + (s.profit || 0), 0);
-  const itemsTotal = order.items.reduce((sum, item) => sum + item.unitPrice * item.quantity, 0);
-  const shippingFee = order.shippingFee || 0;
-  const discount = order.discount || 0;
+  const totalProfit = order.settlements.reduce((sum, s) => sum + Number(s.profit || 0), 0);
+  const itemsTotal = order.items.reduce((sum, item) => sum + Number(item.unitPrice) * item.quantity, 0);
+  const shippingFee = Number(order.shippingFee || 0);
+  const discount = Number(order.discount || 0);
 
   return (
     <View className="order-detail">
@@ -232,7 +232,7 @@ export default function OrderDetail() {
               {item.specs ? <Text className="order-detail__item-specs">{item.specs}</Text> : null}
             </View>
             <View className="order-detail__item-right">
-              <Text className="order-detail__item-price">¥{item.unitPrice.toFixed(2)}</Text>
+              <Text className="order-detail__item-price">¥{Number(item.unitPrice).toFixed(2)}</Text>
               <Text className="order-detail__item-qty">x{item.quantity}</Text>
             </View>
           </View>
@@ -258,7 +258,7 @@ export default function OrderDetail() {
         )}
         <View className="order-detail__row order-detail__row--total">
           <Text className="order-detail__label">实付金额</Text>
-          <Text className="order-detail__value order-detail__value--total">¥{order.totalAmount.toFixed(2)}</Text>
+          <Text className="order-detail__value order-detail__value--total">¥{Number(order.totalAmount).toFixed(2)}</Text>
         </View>
       </View>
 

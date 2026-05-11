@@ -198,7 +198,7 @@ export default function OrderList() {
                     {item.specs ? <Text className="order-card__item-specs">{item.specs}</Text> : null}
                   </View>
                   <View className="order-card__item-right">
-                    <Text className="order-card__item-price">¥{item.unitPrice.toFixed(2)}</Text>
+                    <Text className="order-card__item-price">¥{Number(item.unitPrice).toFixed(2)}</Text>
                     <Text className="order-card__item-qty">×{item.quantity}</Text>
                   </View>
                 </View>
@@ -208,7 +208,7 @@ export default function OrderList() {
               <View className="order-card__footer">
                 <Text className="order-card__total">
                   共{order.items.reduce((s, i) => s + i.quantity, 0)}件 合计：
-                  <Text className="order-card__total-amount">¥{order.totalAmount.toFixed(2)}</Text>
+                  <Text className="order-card__total-amount">¥{Number(order.totalAmount).toFixed(2)}</Text>
                 </Text>
               </View>
 

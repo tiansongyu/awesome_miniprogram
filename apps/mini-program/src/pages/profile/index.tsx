@@ -186,7 +186,7 @@ export default function Profile() {
           <View className="profile__user">
             <Image
               className="profile__avatar"
-              src={user.avatar || 'https://via.placeholder.com/80'}
+              src={user.avatar || ''}
               mode="aspectFill"
             />
             <View className="profile__info">

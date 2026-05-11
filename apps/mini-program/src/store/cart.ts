@@ -1,4 +1,5 @@
 import { create } from 'zustand';
+import Taro from '@tarojs/taro';
 
 interface CartItem {
   skuId: string;
@@ -19,32 +20,56 @@ interface CartState {
   totalCount: () => number;
 }
 
+function loadCart(): CartItem[] {
+  try {
+    const data = Taro.getStorageSync('cart');
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCart(items: CartItem[]) {
+  Taro.setStorageSync('cart', JSON.stringify(items));
+}
+
 export const useCartStore = create<CartState>((set, get) => ({
-  items: [],
+  items: loadCart(),
 
   addItem: (item) => {
     const items = get().items;
     const existing = items.find((i) => i.skuId === item.skuId);
+    let newItems: CartItem[];
     if (existing) {
-      set({ items: items.map((i) => i.skuId === item.skuId ? { ...i, quantity: i.quantity + item.quantity } : i) });
+      newItems = items.map((i) => i.skuId === item.skuId ? { ...i, quantity: i.quantity + item.quantity } : i);
     } else {
-      set({ items: [...items, item] });
+      newItems = [...items, item];
     }
+    set({ items: newItems });
+    saveCart(newItems);
   },
 
   removeItem: (skuId) => {
-    set({ items: get().items.filter((i) => i.skuId !== skuId) });
+    const newItems = get().items.filter((i) => i.skuId !== skuId);
+    set({ items: newItems });
+    saveCart(newItems);
   },
 
   updateQuantity: (skuId, quantity) => {
+    let newItems: CartItem[];
     if (quantity <= 0) {
-      set({ items: get().items.filter((i) => i.skuId !== skuId) });
+      newItems = get().items.filter((i) => i.skuId !== skuId);
     } else {
-      set({ items: get().items.map((i) => i.skuId === skuId ? { ...i, quantity } : i) });
+      newItems = get().items.map((i) => i.skuId === skuId ? { ...i, quantity } : i);
     }
+    set({ items: newItems });
+    saveCart(newItems);
   },
 
-  clear: () => set({ items: [] }),
+  clear: () => {
+    set({ items: [] });
+    saveCart([]);
+  },
 
   totalAmount: () => get().items.reduce((sum, i) => sum + i.price * i.quantity, 0),
 

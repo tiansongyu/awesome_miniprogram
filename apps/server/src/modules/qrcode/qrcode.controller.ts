@@ -13,7 +13,7 @@ export class QrcodeController {
 
   @Get('my-code')
   @UseGuards(RolesGuard)
-  @Roles(Role.SUPER_ADMIN, Role.AGENT_L1, Role.AGENT_L2, Role.AGENT_L3)
+  @Roles(Role.SUPER_ADMIN, Role.AGENT_L1, Role.AGENT_L2, Role.AGENT_L3, Role.CUSTOMER)
   getMyBindCode(@CurrentUser() user: User) {
     return this.qrcodeService.getAgentBindCode(user.id);
   }

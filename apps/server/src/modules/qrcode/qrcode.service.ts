@@ -12,8 +12,8 @@ export class QrcodeService {
       where: { id: agentId },
       select: { bindCode: true, role: true },
     });
-    if (!agent || agent.role === Role.CUSTOMER) {
-      throw new BadRequestException('非代理用户');
+    if (!agent) {
+      throw new BadRequestException('用户不存在');
     }
     if (!agent.bindCode) {
       const bindCode = generateBindCode();
