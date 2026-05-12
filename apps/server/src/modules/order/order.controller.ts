@@ -83,4 +83,9 @@ export class OrderController {
   ) {
     return this.orderService.ship(id, expressCompany, expressNo);
   }
+
+  @Post(':id/confirm')
+  confirmReceive(@Param('id') id: string, @CurrentUser() user: User) {
+    return this.orderService.confirmReceive(id, user.id);
+  }
 }

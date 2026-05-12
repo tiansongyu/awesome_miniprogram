@@ -259,4 +259,18 @@ export class OrderService {
       },
     });
   }
+
+  async confirmReceive(orderId: string, userId: string) {
+    const order = await this.prisma.order.findUnique({ where: { id: orderId } });
+    if (!order) throw new NotFoundException('订单不存在');
+    if (order.userId !== userId) throw new ForbiddenException('无权操作');
+    if (order.status !== OrderStatus.SHIPPED) {
+      throw new BadRequestException('只有已发货订单可以确认收货');
+    }
+
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.COMPLETED },
+    });
+  }
 }

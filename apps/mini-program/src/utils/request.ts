@@ -1,6 +1,6 @@
 import Taro from '@tarojs/taro';
 
-export const BASE_URL = 'http://127.0.0.1:3000';
+export const BASE_URL = 'http://localhost:3000';
 
 interface ApiResponse<T = any> {
   code: number;
